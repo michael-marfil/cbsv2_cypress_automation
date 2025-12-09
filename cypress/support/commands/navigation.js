@@ -585,7 +585,5 @@ Cypress.Commands.add('navigateTo', (path, options = {}) => {
     };
 
     // call function to perform page navigation
-    cy.then(() => {
-        navigation_step(navigationTree, path, options);
-    });
+    return navigation_step(navigationTree, path, options);
 });

@@ -16,8 +16,14 @@
 // Import commands.js using ES2015 syntax:
 // import './commands'
 
+// Global
+import 'cypress-real-events'; // plugin for real events like like pointerdown, focus, or hover.
+
 // Authentication
 import '@support/commands/auth';
+
+// Permissions
+import '@support/commands/permissions';
 
 // Navigation
 import '@support/commands/navigation';
