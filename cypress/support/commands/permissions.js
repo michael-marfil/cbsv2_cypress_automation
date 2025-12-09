@@ -8,6 +8,8 @@ Cypress.Commands.add('permissions', ({
     // get user credential
     const { username } = getHelper.get_user_credentials();
     cy.intercept('POST', '**/administration/user_right_per_employee/update_employee_permission').as('updatePermission');
+    // Intercept for employee autocomplete search
+    cy.intercept('GET', '**/vue-autocomplete/employees/**').as('employeeSearch');
     return cy.task('query', {
         sql: `SELECT firstname, lastname, employeeid, branchid 
                   FROM general_employees 
@@ -26,6 +28,7 @@ Cypress.Commands.add('permissions', ({
                 .click()
                 .type(username, { delay: 100 });
 
+            cy.wait('@employeeSearch').its('response.statusCode').should('eq', 200);
             cy.get('.v-menu__content:visible').within(() => {
                 cy.get('.v-list-item:visible')
                     .contains(employee.employeeid)
@@ -54,7 +57,7 @@ Cypress.Commands.add('permissions', ({
                                 const isChecked = $checkbox.prop('checked');
 
                                 if (isChecked !== hasAccess) {
-                                    cy.wrap($checkbox).click({ force: true }, { timeout: 10000 }); // force click just in caes it's hidden by css
+                                    cy.wrap($checkbox).click({ force: true, timeout: 10000 }); // force click just in case it's hidden by css
 
                                     // Wait for state to actually change
                                     cy.wrap($checkbox).should(hasAccess ? 'be.checked' : 'not.be.checked');
@@ -67,9 +70,8 @@ Cypress.Commands.add('permissions', ({
             // then update rights
             cy.then(() => {
                 cy.wrap($section)
-                    .find('button')
+                    .contains('button', 'Update Rights')
                     .should('be.visible')
-                    .contains('Update Rights', { timeout: 10000 })
                     .click();
 
                 cy.wait('@updatePermission').its('response.statusCode').should('eq', 200);
