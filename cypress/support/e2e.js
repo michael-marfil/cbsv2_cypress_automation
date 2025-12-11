@@ -28,5 +28,8 @@ import '@support/commands/permissions';
 // Navigation
 import '@support/commands/navigation';
 
+// Database
+import '@support/database/index';
+
 // Helpers
 import '@support/helpers/GetHelper';

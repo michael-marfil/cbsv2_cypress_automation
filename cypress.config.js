@@ -19,7 +19,8 @@ module.exports = defineConfig({
                 webpackOptions: {
                     resolve: {
                         alias: {
-                            '@support': path.resolve(__dirname, 'cypress/support')
+                            '@support': path.resolve(__dirname, 'cypress/support'),
+                            '@database': path.resolve(__dirname, 'cypress/support/database')
                         }
                     }
                 }
