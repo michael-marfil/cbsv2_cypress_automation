@@ -9,6 +9,13 @@ cbsv2-cypress_automation
 ## Quick start (after git clone)
 
 ```bash
+
+# create a new branch named 'dev' (matching our GitHub convention)
+git switch -c 'branchname'
+
+# then pull latest update from branch 'dev' to get updated packages
+git pull origin dev
+
 npm ci #or
 npm install
 

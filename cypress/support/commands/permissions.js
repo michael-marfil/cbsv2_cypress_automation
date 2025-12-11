@@ -15,9 +15,9 @@ Cypress.Commands.add('permissions', ({
                   FROM general_employees 
                   WHERE username = ?`,
         values: [username]
-    }).then(([emp]) => {
-        if (!emp) throw new Error(`Employee ${username} not found`);
-        employee = emp;
+    }).then(([result]) => {
+        if (!result) throw new Error(`Employee ${username} not found`);
+        employee = result;
 
         // save permissions for global use
         cy.navigateTo('administration.userrights.userright-per-employee');
