@@ -28,6 +28,16 @@ import '@support/commands/permissions';
 // Navigation
 import '@support/commands/navigation';
 
+// Routes
+import '@support/routes/accounting';
+import '@support/routes/lending';
+import '@support/routes/casa';
+import '@support/routes/tellering';
+import '@support/routes/human_resources';
+import '@support/routes/risk_management';
+import '@support/routes/administration';
+import '@support/routes/general';
+
 // Database
 import '@support/database/index';
 
