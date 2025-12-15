@@ -50,6 +50,38 @@ class GetHelper {
             return db.systemdate(userbranch);
         });
     }
+
+    /**
+     * Fetches the employee's data from db
+     * @param {string} [username] - Defaults to the environment username if not provided.
+     * @returns {Cypress.Chainable<>} employee data row
+     */
+    get_employee(username = Cypress.env('username')) {
+        return db.employee(username);
+    }
+
+    /**
+     * Fetches if employee has a user-right based on permissionid
+     * @param {string, number} [employeeid,permissionid] - Defaults to the environment username if not provided.
+     * @returns {Cypress.Chainable<>} if employee has that specific user-right permission
+     */ 
+    get_employee_userright(employeeid = null, permissionid = null) {
+        if (employeeid === null && permissionid === null) {
+            throw new Error('Employee ID or Permission ID is null.');
+        }
+
+        return db.employee_userright(employeeid, permissionid);
+    }
+
+    /**
+     * Fetches permission list
+     * @param {string} [categoryid,slug]
+     * @returns {Cypress.Chainable<>} permissions row
+     */ 
+    permissions(categoryid, slug) {
+        return db.permissions(categoryid, slug);
+    }
+
 }
 
 export default new GetHelper();
