@@ -1,4 +1,5 @@
 import getHelper from '@support/helpers/GetHelper';
+import general from '@support/routes/general';
 
 Cypress.Commands.add('login', () => {
     // establish or restore the session (Cookies/Storage)
@@ -26,23 +27,7 @@ Cypress.Commands.add('login', () => {
 Cypress.Commands.add('logout', () => {
     cy.url().then((url) => {
         if (!url.includes('/login')) {
-            cy.get('body').then(($body) => {
-                // Check if sidebar is closed
-                if (!$body.find('#sidenav:visible').length) {
-                    // Clicks the icon to open the sidebar/menu
-                    cy.get('.icon-container > .v-icon', { timeout: 8000 })
-                        .should('be.visible')
-                        .click({ force: true });
-                    cy.get('#sidenav', { timeout: 5000 }).should('be.visible');
-                }
-
-                // Clicks 'General' and then 'Logout'
-                cy.get('.category-name').contains('General').click();
-                cy.wait(1000); // Consider replacing this with an assertion/wait
-                cy.get('.white-bg > a').contains('Logout').click();
-            });
-            // Assert that the UI successfully lands on the login page
-            cy.url({ timeout: 10000 }).should('include', '/login');
+            general.logout();
         }
     });
 
