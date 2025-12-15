@@ -1,4 +1,17 @@
-class formathelper {
+/**
+ * FormatHelper
+ * ----------------------------------------------------------------------
+ * Purpose:
+ * Provides utility methods for formatting common identifiers and dates
+ * used throughout the application (e.g., Savings ID, PNID, GL Code, dates, etc).
+ *
+ * Usage:
+ * - Imported as a singleton instance.
+ * - All methods are pure functions that handle null/undefined.
+ *
+ * @author Michael
+ */
+class FormatHelper {
     // helper to format savings id
     formatSavingsID(savingsid) {
         const digits = String(savingsid ?? '').replace(/\D/g, '');
@@ -70,4 +83,4 @@ class formathelper {
     }
 }
 
-export default new formathelper();
+export default new FormatHelper();

@@ -1,12 +1,12 @@
 // ** USER RIGHT PERMISSIONS ** //
-import getHelper from '@support/helpers/GetHelper';
+import GetHelper from '@support/helpers/GetHelper';
 let employee;
 
 Cypress.Commands.add('permissions', ({
     userPermissions
 }) => {
     // get user credential
-    const { username } = getHelper.get_user_credentials();
+    const { username } = GetHelper.get_user_credentials();
     cy.intercept('POST', '**/administration/user_right_per_employee/update_employee_permission').as('updatePermission');
     // Intercept for employee autocomplete search
     cy.intercept('GET', '**/vue-autocomplete/employees/**').as('employeeSearch');

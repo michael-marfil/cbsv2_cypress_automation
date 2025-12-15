@@ -1,4 +1,4 @@
-import getHelper from '@support/helpers/GetHelper';
+import GetHelper from '@support/helpers/GetHelper';
 import general from '@support/routes/general';
 
 Cypress.Commands.add('login', () => {
@@ -6,7 +6,7 @@ Cypress.Commands.add('login', () => {
     cy.session('user_session', () => {
         cy.visit('/login');
         // get and assign user credentials
-        const { username, password } = getHelper.get_user_credentials();
+        const { username, password } = GetHelper.get_user_credentials();
 
         cy.intercept('POST', '**/login').as('login');
         cy.intercept('GET', '**/home').as('home');
