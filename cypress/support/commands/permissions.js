@@ -1,5 +1,6 @@
 // ** USER RIGHT PERMISSIONS ** //
 import GetHelper from '@support/helpers/GetHelper';
+import { db } from '@database';
 let employee;
 
 Cypress.Commands.add('permissions', ({
@@ -10,12 +11,8 @@ Cypress.Commands.add('permissions', ({
     cy.intercept('POST', '**/administration/user_right_per_employee/update_employee_permission').as('updatePermission');
     // Intercept for employee autocomplete search
     cy.intercept('GET', '**/vue-autocomplete/employees/**').as('employeeSearch');
-    return cy.task('query', {
-        sql: `SELECT firstname, lastname, employeeid, branchid 
-                  FROM general_employees 
-                  WHERE username = ?`,
-        values: [username]
-    }).then(([result]) => {
+    
+    return db.employee(username).then((result) => {
         if (!result) throw new Error(`Employee ${username} not found`);
         employee = result;
 
