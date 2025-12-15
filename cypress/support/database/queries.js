@@ -16,5 +16,12 @@ export const sql = {
         WHERE branchid = ? AND managerapproverid > 0`,
 
     // ------ USER ------ //
-    'user.userbranchid': `SELECT userbranchid FROM general_employees WHERE username = ?`
+    'user.userbranchid': `SELECT userbranchid FROM general_employees WHERE username = ?`,
+
+    // ------ EMPLOYEE ------ //
+    'employee.data': `SELECT * FROM general_employees WHERE username = ?`,
+    'employee.user-right': `SELECT COUNT(*) AS employee_userright FROM mis_employee_userrights WHERE employeeid = ? AND permissionid = ?`,
+
+    // ------ PERMISSIONS ------ //
+    'system.permissions': `SELECT * FROM mis_permissions WHERE categoryid = ? AND slug = ?`
 }

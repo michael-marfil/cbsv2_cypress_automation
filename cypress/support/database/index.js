@@ -34,14 +34,18 @@ class Database {
     }
 
     // returns first row or null
-    getOne(key, params) {
+    getOne(key, ...params) {
         return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
     }
 
     // returns all rows
-    getAll(key, params) {
+    getAll(key, ...params) {
         return this.query(key, params);
     }
+
+    // --- SPECIFIC QUERY WRAPPERS ---
+    // Developers: Add your new query helper methods below this line,
+    // which should wrap existing SQL queries using getOne/getAll/query.
 
     /**
      * @returns system date string for given branch (or null if none)
@@ -55,6 +59,27 @@ class Database {
      */
     userbranch(username) {
         return this.getOne('user.userbranchid', username).then(row => row?.userbranchid ?? null);
+    }
+
+    /**
+     * @returns employee's data for given username (or null if none)
+     */
+    employee(username) {
+        return this.getOne('employee.data', username).then(row => row ?? null);
+    }
+
+    /**
+     * @returns employee's user-rights for given employeeid and permissionid(or null if none)
+     */
+    employee_userright(employeeid, permissionid) {
+        return this.getOne('employee.user-right', employeeid, permissionid).then(row => row?.employee_userright ?? null);
+    }
+
+    /**
+     * @returns list of permissions (or null if none)
+     */
+    permissions(categoryid, slug) {
+        return this.getOne('system.permissions', categoryid, slug).then(row => row ?? null);
     }
     
 }
