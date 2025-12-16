@@ -16,7 +16,7 @@ Cypress.Commands.add('permissions', ({
         if (!result) throw new Error(`Employee ${username} not found`);
         employee = result;
 
-        // save permissions for global use
+        // navigate to user rights per employee
         cy.navigateTo('administration.userrights.userright-per-employee');
 
         cy.get('.v-card.table-card:visible').find('section:visible').then(($section) => {

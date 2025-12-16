@@ -20,7 +20,8 @@ module.exports = defineConfig({
                     resolve: {
                         alias: {
                             '@support': path.resolve(__dirname, 'cypress/support'),
-                            '@database': path.resolve(__dirname, 'cypress/support/database')
+                            '@database': path.resolve(__dirname, 'cypress/support/database'),
+                            '@handler': path.resolve(__dirname, 'cypress/support/handlers')
                         }
                     }
                 }

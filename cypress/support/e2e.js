@@ -43,3 +43,10 @@ import '@support/database/index';
 
 // Helpers
 import '@support/helpers/GetHelper';
+
+// ---------- CUSTOM COMMANDS ---------- //
+
+/**
+ * Accounting
+ */
+import '@support/commands/Accounting/Journals/JournalPostingCommand';
