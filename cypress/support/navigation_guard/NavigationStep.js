@@ -90,17 +90,24 @@ export function navigation_step(navigationTree, path, options = {}) {
     }
 
     cy.wait(500); // otherwise, do normal click navigation
-
+    cy.get('.v-content:visible');
+    
     // ensure sidenav is visible
     cy.get('body').then(($body) => {
-        // cy.waitForPageLoad();
-        cy.wait(1000);
-        // check if sidenav is open, then click if not
-        if (!$body.find('#sidenav:visible')) {
-            cy.get('.icon-container > .v-icon', { timeout: 8000 })
-                .should('be.visible')
-                .click({ force: true });
-            cy.get('#sidenav', { timeout: 5000 }).should('be.visible');
+        const $sidenav = $body.find('#sidenav'); 
+        const $icon = $body.find('.v-icon.mdi-chevron-right');
+
+        cy.log(`Sidenav found: ${$sidenav.length}`);
+        cy.log(`Sidenav is :visible: ${$sidenav.is(':visible')}`);
+        cy.log(`icon visible: ${$icon.is(':visible')}`);
+        if ($sidenav.length === 0 || !$sidenav.is(':visible')) {
+            cy.log('sidenav is not visible');
+            
+            cy.wrap($icon).click({ force: true });
+
+            cy.get('#sidenav', { timeout: 10000 }).should('be.visible');
+        } else {
+            cy.log('sidenav already visible');
         }
     });
 
