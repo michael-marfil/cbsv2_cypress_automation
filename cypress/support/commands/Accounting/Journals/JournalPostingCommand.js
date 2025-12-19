@@ -89,14 +89,12 @@ Cypress.Commands.add("journalDeleting", ({
 
                 cy.wait(1000);
 
-                cy.get('.v-card.transaction-card')
-                    .wait(1000)
+                cy.get('.v-card.transaction-card', { timeout: 2000 })
                     .find('button')
                     .should('be.visible')
                     .as('v-card-transaction')
 
-                cy.get('@v-card-transaction')
-                    .wait(1000)
+                cy.get('@v-card-transaction', { timeout: 2000 })
                     .contains('Submit')
                     .should('be.visible')
                     .click();

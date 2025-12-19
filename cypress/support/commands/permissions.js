@@ -71,7 +71,7 @@ Cypress.Commands.add('permissions', ({
                     .should('be.visible')
                     .click();
 
-                cy.wait('@updatePermission').its('response.statusCode').should('eq', 200);
+                cy.wait('@updatePermission', { timeout: 5000 }).its('response.statusCode').should('eq', 200);
             });
         });
     });
