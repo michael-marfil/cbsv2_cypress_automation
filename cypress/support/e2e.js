@@ -51,9 +51,12 @@ import '@support/helpers/GetHelper';
  */
 import '@support/commands/Accounting/Journals/JournalPostingCommand';
 
-// GENERAL
+/**
+ * Lending
+ */
+import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand';
 
 /**
- * Approval
+ * General
  */
-import '@support/commands/General/Approval/Lending/LoanReleaseApproval';
+import '@support/commands/General/Approval/Lending/LoanApplicationApproval';
