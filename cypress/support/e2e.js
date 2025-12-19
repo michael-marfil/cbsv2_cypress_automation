@@ -18,6 +18,7 @@
 
 // Global
 import 'cypress-real-events'; // plugin for real events like like pointerdown, focus, or hover.
+import '@support/commands/access';
 
 // Authentication
 import '@support/commands/auth';
