@@ -50,3 +50,10 @@ import '@support/helpers/GetHelper';
  * Accounting
  */
 import '@support/commands/Accounting/Journals/JournalPostingCommand';
+
+// GENERAL
+
+/**
+ * Approval
+ */
+import '@support/commands/General/Lending/LoanReleaseApproval';
