@@ -5,14 +5,14 @@ import general from '@support/routes/general';
 Cypress.Commands.add('lendingSettings', ({ toEdit }) => {
     lending.goToSettingsMgmt(); // navigate to Settings Mgmt.
 
+    // intercept the settings mgmt list
+    cy.intercept('GET', '**/lending-settings').as('settingsMgmt');
+    
     return cy.hasPageAccess().then(({ hasAccess }) => {
         if (!hasAccess) {
             cy.log('user has no page access.');
             return;
         }
-
-        // intercept the settings mgmt list
-        cy.intercept('GET', '**/lending-settings').as('settingsMgmt');
 
         const results = [];
         // IMPORTANT: return a Cypress chain that resolves when all edits finish
