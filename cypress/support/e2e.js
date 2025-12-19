@@ -56,4 +56,4 @@ import '@support/commands/Accounting/Journals/JournalPostingCommand';
 /**
  * Approval
  */
-import '@support/commands/General/Lending/LoanReleaseApproval';
+import '@support/commands/General/Approval/Lending/LoanReleaseApproval';
