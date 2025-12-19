@@ -84,13 +84,12 @@ export function navigation_step(navigationTree, path, options = {}) {
 
     if (effectiveDirectVisit) { // if effectiveDirectVisit is true, skip UI clicks and go straight to URL
         cy.visit(finalUrl);
-        assertUrlMatches(expectedUrl);
-        cy.wait(1000);
+        assertUrlMatches(expectedUrl, { timeout: 2000 });
         return;
     }
 
-    cy.wait(500); // otherwise, do normal click navigation
-    cy.get('.v-content:visible');
+    // otherwise, do normal click navigation
+    cy.get('.v-content:visible', { timeout: 5000 });
     
     // ensure sidenav is visible
     cy.get('body').then(($body) => {
@@ -162,5 +161,5 @@ export function navigation_step(navigationTree, path, options = {}) {
         assertUrlMatches(expectedUrl);
     });
 
-    cy.get('body').click(0, 0).wait(1000);
+    cy.get('body', { timeout: 5000 }).click(0, 0);
 }
