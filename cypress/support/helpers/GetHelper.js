@@ -82,6 +82,33 @@ class GetHelper {
         return db.permissions(categoryid, slug);
     }
 
+    /**
+     * @param {string} username, categoryid, level 
+     * @returns {Cypress.Chainable<boolean>} - Whether the user has the specified level permission.
+     */
+    has_level_permission(username, categoryid, level) {
+        const slug = `${categoryid}-${level}`;
+
+        return this.get_employee(username).then((employeedata) => {
+            const employeeid = employeedata.employeeid;
+            return this.permissions(categoryid, slug).then((permission) => {
+                const permissionid = permission.permissionid;
+                return this.get_employee_userright(employeeid, permissionid).then((result) => {
+                    const userRight = Number(
+                        result?.employee_userright ??
+                        result?.count ??
+                        result ??
+                        0
+                    );
+
+                    const hasAccess = userRight > 0;
+
+                    return hasAccess;
+                });
+            });
+        });
+    }
+
 }
 
 export default new GetHelper();

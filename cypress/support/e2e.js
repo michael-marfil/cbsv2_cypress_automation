@@ -61,3 +61,4 @@ import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand'
  * General
  */
 import '@support/commands/General/Approval/Lending/LoanApplicationApproval';
+import '@support/commands/General/Approval/Lending/LendingSettingsApproval';
