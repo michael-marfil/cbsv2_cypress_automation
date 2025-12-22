@@ -15,6 +15,7 @@ Cypress.Commands.add('approveLendingSettings', ({ toApprove = [] } = {}) => {
 
     // intercept and get credentials
     cy.intercept('POST', '**/lending-settings-report').as('getApprovals');
+    cy.intercept('POST', '**/lending-settings-report/update-data').as('Approved');
     const { username, password } = GetHelper.get_user_credentials();
     const categoryid = '1401';
 
@@ -92,6 +93,12 @@ Cypress.Commands.add('approveLendingSettings', ({ toApprove = [] } = {}) => {
                     cy.get('.v-btn:visible')
                         .contains('Submit')
                         .click({ force: true });
+                }).then(() => {
+                    cy.wait('@Approved', { timeout: 10000 })
+                        .its('response.statusCode')
+                        .should('eq', 200);
+
+                    cy.log(`approved lending settings`);
                 });
             });
         });
