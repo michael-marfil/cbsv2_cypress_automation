@@ -45,6 +45,10 @@ import '@support/database/index';
 // Helpers
 import '@support/helpers/GetHelper';
 
+// Seeders
+// import '@support/seeders/sample_api';
+import '@support/seeders/SavingsProductSeeder';
+
 // ---------- CUSTOM COMMANDS ---------- //
 
 /**
