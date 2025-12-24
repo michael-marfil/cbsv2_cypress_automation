@@ -23,5 +23,8 @@ export const sql = {
     'employee.user-right': `SELECT COUNT(*) AS employee_userright FROM mis_employee_userrights WHERE employeeid = ? AND permissionid = ?`,
 
     // ------ PERMISSIONS ------ //
-    'system.permissions': `SELECT * FROM mis_permissions WHERE categoryid = ? AND slug = ?`
+    'system.permissions': `SELECT * FROM mis_permissions WHERE categoryid = ? AND slug = ?`,
+
+    // ------ GL ACCOUNTS ------ //
+    'accounting.glaccount': `SELECT * FROM acctng_glaccounts WHERE glchildcount = 0 ORDER BY RAND() LIMIT ?`
 }
