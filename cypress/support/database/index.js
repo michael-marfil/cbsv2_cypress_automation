@@ -88,7 +88,13 @@ class Database {
     glaccounts(limit = 1) {
         return this.getAll('accounting.glaccount', limit);
     }
-    
+
+    /**
+     * @returns product settings for given product name (or null if none)
+     */
+    savings_product(productname) {
+        return this.getOne('casa.productsettings', productname).then(row => row ?? null);
+    }
 }
 
 export const db = new Database();

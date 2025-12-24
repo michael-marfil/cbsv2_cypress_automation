@@ -129,10 +129,8 @@ Cypress.Commands.add('seedSavingsProduct', (overrides = {}) => {
             const productName = payload.product.details.productname;
             const productCode = payload.product.details.productcode;
 
-            cy.log(`Created Savings Product: "${productName}" (Code: ${productCode})`);
             cy.wrap(productName).as('createdSavingsProductName');
             cy.wrap(productCode).as('createdSavingsProductCode');
-            cy.wrap(response.body).as('createdSavingsProductResponse');
         });
     });
 });
