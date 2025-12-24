@@ -81,6 +81,13 @@ class Database {
     permissions(categoryid, slug) {
         return this.getOne('system.permissions', categoryid, slug).then(row => row ?? null);
     }
+
+    /**
+     * @returns list of GL accounts (or null if none)
+     */
+    glaccounts(limit = 1) {
+        return this.getAll('accounting.glaccount', limit);
+    }
     
 }
 
