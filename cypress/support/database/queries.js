@@ -25,6 +25,15 @@ export const sql = {
     // ------ PERMISSIONS ------ //
     'system.permissions': `SELECT * FROM mis_permissions WHERE categoryid = ? AND slug = ?`,
 
-    // ------ GL ACCOUNTS ------ //
-    'accounting.glaccount': `SELECT * FROM acctng_glaccounts WHERE glchildcount = 0 ORDER BY RAND() LIMIT ?`
+    /**
+     * ACCOUNTING
+     */
+    // GL Accounts
+    'accounting.glaccount': `SELECT * FROM acctng_glaccounts WHERE glchildcount = 0 ORDER BY RAND() LIMIT ?`,
+
+    /**
+     * CASA
+     */
+    // Product Settings
+    'casa.productsettings': `SELECT productid, productname FROM savings_products WHERE productname = ? ORDER BY productid DESC LIMIT 1`,
 }
