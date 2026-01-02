@@ -32,6 +32,12 @@ export const sql = {
     'accounting.glaccount': `SELECT * FROM acctng_glaccounts WHERE glchildcount = 0 ORDER BY RAND() LIMIT ?`,
 
     /**
+     * LENDING
+     */
+    // Loan Product Settings
+    'lending.loanproductsettings': `SELECT * FROM lending_loanproducts WHERE NAME = ?`,
+
+    /**
      * CASA
      */
     // Product Settings
