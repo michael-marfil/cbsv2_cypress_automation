@@ -90,6 +90,13 @@ class Database {
     }
 
     /**
+     * @returns loan product settings for given loan product name (or null if none)
+     */
+    loan_product(loanproductname) {
+        return this.getOne('lending.loanproductsettings', loanproductname).then(row => row ?? null);
+    }
+
+    /**
      * @returns product settings for given product name (or null if none)
      */
     savings_product(productname) {
