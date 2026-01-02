@@ -126,11 +126,7 @@ Cypress.Commands.add('seedSavingsProduct', (overrides = {}) => {
         return Api.api_post('/casa/settings/product-management/product-settings/post_product', payload).then((response) => {
             expect(response.status).to.be.oneOf([200, 201]);
 
-            const productName = payload.product.details.productname;
-            const productCode = payload.product.details.productcode;
-
-            cy.wrap(productName).as('createdSavingsProductName');
-            cy.wrap(productCode).as('createdSavingsProductCode');
+            cy.log(`Savings Product Added Successfully!`);
         });
     });
 });
