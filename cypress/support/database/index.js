@@ -95,6 +95,13 @@ class Database {
     savings_product(productname) {
         return this.getOne('casa.productsettings', productname).then(row => row ?? null);
     }
+
+    /**
+     * @returns list of clients matching given names (or null if none)
+     */
+    clients(firstname, middlename, lastname) {
+        return this.getAll('general.clients', firstname, middlename, lastname);
+    }
 }
 
 export const db = new Database();

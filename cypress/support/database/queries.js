@@ -36,4 +36,13 @@ export const sql = {
      */
     // Product Settings
     'casa.productsettings': `SELECT productid, productname FROM savings_products WHERE productname = ? ORDER BY productid DESC LIMIT 1`,
+
+    /**
+     * GENERAL
+     */
+    // Clients
+    'general.clients': `SELECT clientid,
+        CONCAT(firstname, ' ', LEFT(middlename, 1), '.', ' ', lastname) AS accountname 
+        FROM general_clients 
+        WHERE firstname = ? AND middlename = ? AND lastname = ?`,
 }
