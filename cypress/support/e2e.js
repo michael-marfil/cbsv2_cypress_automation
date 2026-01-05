@@ -19,6 +19,7 @@
 // Global
 import 'cypress-real-events'; // plugin for real events like like pointerdown, focus, or hover.
 import '@support/commands/access';
+import '@support/global/AvoidWindowOpen';
 
 // Authentication
 import '@support/commands/auth';
@@ -68,3 +69,8 @@ import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand'
  */
 import '@support/commands/General/Approval/Lending/LoanApplicationApproval';
 import '@support/commands/General/Approval/Lending/LendingSettingsApproval';
+
+beforeEach(() => {
+    // automatically prevent new tabs/windows from opening in all tests.
+    cy.avoidWindowOpen();
+});
