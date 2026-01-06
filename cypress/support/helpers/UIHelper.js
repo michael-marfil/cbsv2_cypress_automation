@@ -41,6 +41,21 @@ export const action = {
                 .should('be.visible')
                 .click({ force: true });
         }
+    },
+
+    autocomplete: (selector = 'input[type="text"]', value) => {
+        if (value !== undefined && value !== null) {
+            cy.get(selector, { timeout: 10000 })
+                .should('be.visible')
+                .type(value, { delay: 100, timeout: 5000 })
+                .then(() => {
+                    cy.root().closest('body').within(() => {
+                        cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
+                            .contains(value)
+                            .click({ force: true });
+                    });
+                });
+        }
     }
 
 
