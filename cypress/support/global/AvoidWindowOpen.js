@@ -1,6 +1,6 @@
 Cypress.Commands.add('avoidWindowOpen', () => {
     cy.window({ log: false }).then((win) => {
-        win.__preventUrl__ = win.location.href;
+        win.__prevUrl__ = win.location.href;
 
         if (!win.open.__stubbed__) {
             cy.stub(win, 'open')
@@ -41,49 +41,50 @@ Cypress.Commands.add('avoidWindowOpen', () => {
         }
 
         if (!Cypress.__avoidWinPatched__) {
-            Cypress.on('window:before:load', (win) => {
-                win.__preventUrl__ = win.location.href;
+            Cypress.on('window:before:load', (childWin) => {
+                childWin.__prevUrl__ = childWin.location.href;
 
-                // Stub window.open
-                cy.stub(win, 'open')
-                    .callsFake((url) => {
-                        try { 
-                            win.location.href = url; 
-                        } catch (_) {}
-                        return win;
-                    })
-                    .as('windowOpen');
+                childWin.open = function(url) {
+                    try { 
+                        childWin.location.href = url; 
+                    } catch (_) {}
+                    return childWin;
+                };
 
                 // Override window.close
-                win.close = () => {
+                childWin.close = () => {
                     try {
-                        if (win.history && win.history.length > 0) {
-                            win.history.back();
+                        if (childWin.history && childWin.history.length > 0) {
+                            childWin.history.back();
+                        } else if (childWin.__prevUrl__) {
+                            childWin.location.assign(childWin.__prevUrl__);
                         }
                     } catch (_) {}
                 };
 
                 // Remove target attributes from links
                 const observer = new MutationObserver(() => {
-                    win.document.querySelectorAll('a[target="_blank"], a[target="_new"]').forEach((a) => {
+                    childWin.document.querySelectorAll('a[target="_blank"], a[target="_new"]').forEach((a) => {
                         a.removeAttribute('target');
                     });
                 });
 
-                win.addEventListener('DOMContentLoaded', () => {
-                    observer.observe(win.document.body, {
-                        childList: true,
-                        subtree: true
-                    });
+                childWin.addEventListener('DOMContentLoaded', () => {
+                    if (childWin.document.body) {
+                        observer.observe(childWin.document.body, {
+                            childList: true,
+                            subtree: true
+                        });
 
-                    // Initial cleanup
-                    win.document.querySelectorAll('a[target="_blank"], a[target="_new"]').forEach((a) => {
-                        a.removeAttribute('target');
-                    });
+                        // Initial cleanup
+                        childWin.document.querySelectorAll('a[target="_blank"], a[target="_new"]').forEach((a) => {
+                            a.removeAttribute('target');
+                        });
+                    }
                 });
 
                 // Handle clicks
-                win.addEventListener('click', (e) => {
+                childWin.addEventListener('click', (e) => {
                     const a = e.target?.closest('a[target]');
                     if (a) {
                         a.removeAttribute('target');
