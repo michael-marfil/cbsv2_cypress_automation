@@ -1,16 +1,27 @@
 import lending from '@support/routes/lending';
 
 Cypress.Commands.add('loanApplication', () => {
+    const loan_product = 'TS 51 (TS LRA 51)';
+    const clientid = 110311218;
+    const loanproductid = 32;
     // intercept the application/release page
     cy.intercept('GET', '**/lending/application-release/initial-data').as('app-release');
+    cy.intercept({
+        method: 'GET',
+        pathname: '**/lending/application/release/details',
+        query: {
+            process: 'apply1',
+            clientid: clientid.toString(),
+            loanproductid: loanproductid.toString(),
+            pnid: '0'
+        }
+    }).as('loan-app-details');
 
     // visit Application/Release
     lending.goToApplicationRelease({ timeout: 20000 });
 
     cy.wait('@app-release', { timeout: 60000 }).then((interception) => {
         const products = interception.response.body.products;
-        const loan_product = 'TS 51 (TS LRA 51)';
-        const clientid = 110311218;
         const productExists = products.find(p => p.loanproductname === loan_product);
 
         if (!productExists) {
@@ -81,6 +92,26 @@ Cypress.Commands.add('loanApplication', () => {
                     .then(() => {
                         cy.get('.v-menu__content .v-list :visible', { timeout: 5000 }).contains(clientid).click({ force: true });
                     });
+            });
+        });
+    }).then(() => {
+        cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
+            cy.get('#amortOptions:visible', { timeout: 10000 }).then(() => {
+                cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(0).as('loan-application-details');
+                cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(1).as('amortization-details');
+
+                cy.get('@loan-application-details').then(() => {
+                    cy.log('loan application details');
+                });
+
+                cy.get('@amortization-details').then(() => {
+                    cy.log('amortization details');
+                });
+
+            });
+
+            cy.get('.tabContainer:visible', { timeout: 20000 }).then(() => {
+                cy.log('entered tab container');
             });
         });
     });
