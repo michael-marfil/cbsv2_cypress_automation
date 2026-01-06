@@ -1,5 +1,6 @@
 import lending from '@support/routes/lending';
 import { action } from '@support/helpers/UIHelper';
+import handleOtherDetailsTab from '@support/handlers/Application-Release/handleOtherDetails';
 
 Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
     const {
@@ -14,7 +15,8 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
         finalSubmit = true,
         data = {
             loan_app_details: [],
-            amort_details: []
+            amort_details: [],
+            other_details: []
         }
     } = loan_application_data;
     
@@ -111,6 +113,7 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
     }).then(() => {
         const LoanAppDetails = data.loan_app_details[0] || {};
         const AmortDetails = data.amort_details[0] || {};
+        const OtherDetails = data.other_details[0] || {};
         
         cy.get('body').then($body => {
             cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
@@ -275,6 +278,8 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                             });
 
                             if (triggerSubmit.other_details) cy.contains('.v-btn__content', 'submit').click({ force: true });
+
+                            handleOtherDetailsTab(OtherDetails);
                         } else {
                             cy.log('Skipping: Other Details Tab not found.');
                         }
