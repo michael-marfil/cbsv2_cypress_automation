@@ -20,7 +20,7 @@ export default function handleOtherDetailsTab(otherDetails) {
                     
                     if (found) {
                         const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        cy.contains('td', new RegExp(`^\\s*${escapedLabel}\\s*$`)).parent('tr').then($row => {
+                        cy.contains('td', new RegExp(`^\\s*${escapedLabel}\\s*$`), { log: false }).parent('tr').then($row => {
                             if ($row.is(':visible')) {
                                 callback();
                             } else {
