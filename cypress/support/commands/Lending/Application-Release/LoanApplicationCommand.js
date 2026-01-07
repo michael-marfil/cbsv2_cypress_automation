@@ -1,6 +1,6 @@
 import lending from '@support/routes/lending';
-import { action } from '@support/helpers/UIHelper';
 import handleOtherDetailsTab from '@support/handlers/Application-Release/handleOtherDetails';
+import handleAmortOptions from '@support/handlers/Application-Release/handleAmortOptions';
 
 Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
     const {
@@ -117,130 +117,15 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
         
         cy.get('body').then($body => {
             cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
-                cy.get('#amortOptions:visible', { timeout: 10000 }).then(() => {
-                    cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(0).as('loan-application-details');
-                    cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(1).as('amortization-details');
-
-                    // Helper function to safely interact with a field
-                    const field = (label, callback) => {
-                        cy.get('body').then($body => {
-                            if ($body.find(`td:contains("${label}")`).length > 0) {
-                                cy.contains('td', label).parent('tr').then($row => {
-                                    if ($row.is(':visible')) {
-                                        callback();
-                                    } else {
-                                        cy.log(`Skipping: ${label} field is not visible`);
-                                    }
-                                });
-                            } else {
-                                cy.log(`Skipping: ${label} field not found in DOM`);
-                            }
-                        });
-                    };
-
-                    // ----------------------------------------
-                    // LOAN APPLICATION DETAILS
-                    // ----------------------------------------
-                    cy.get('@loan-application-details').then(() => {
-                        // Term
-                        field('Term', () => {
-                            cy.contains('td', 'Term').parent('tr').within(() => {
-                                if (LoanAppDetails.term) action.input('input.currency-field', LoanAppDetails.term);
-                                if (LoanAppDetails.termUnit) action.select(undefined, LoanAppDetails.termUnit);
-                            });
-                        });
-
-                        // Interest Rate
-                        field('Interest Rate', () => {
-                            cy.contains('td', 'Interest Rate').parent('tr').within(() => {
-                                if (LoanAppDetails.interestRate) action.input('input.currency-field', LoanAppDetails.interestRate);
-                                if (LoanAppDetails.interestRateUnit) action.select(undefined, LoanAppDetails.interestRateUnit);
-                            });
-                        });
-
-                        // Interest Computation
-                        field('Interest Computation', () => {
-                            cy.contains('td', 'Interest Computation').parent('tr').within(() => {
-                                if (LoanAppDetails.interestComp) action.select(undefined, LoanAppDetails.interestComp);
-                            });
-                        });
-                    });
-
-                    // ----------------------------------------
-                    // AMORTIZATION DETAILS
-                    // ----------------------------------------
-                    cy.get('@amortization-details').then(() => {
-                        // Fixed Days of Term
-                        field('Fixed Days of Term', () => {
-                            cy.contains('td', 'Fixed Days of Term').parent('tr').within(() => {
-                                if (AmortDetails.fixedDaysofTerm) action.check(undefined, AmortDetails.fixedDaysofTerm);
-                            });
-                        });
-
-                        // Diminishing Option
-                        field('Diminishing Option', () => {
-                            cy.contains('td', 'Diminishing Option').parent('tr').within(() => {
-                                if (AmortDetails.diminishingOpt) action.select(undefined, AmortDetails.diminishingOpt);
-                            });
-                        });
-
-                        // Amortization Days
-                        field('Amortization Days', () => {
-                            cy.contains('td', 'Amortization Days').parent('tr').within(() => {
-                                if (AmortDetails.amortDays) action.select(undefined, AmortDetails.amortDays);
-                            });
-                        });
-
-                        // Principal Interval
-                        field('Principal Interval', () => {
-                            cy.contains('td', 'Principal Interval').parent('tr').within(() => {
-                                if (AmortDetails.principalInterval) action.select(undefined, AmortDetails.principalInterval);
-                            });
-                        });
-
-                        // Principal Graceperiod
-                        field('Principal Graceperiod', () => {
-                            cy.contains('td', 'Principal Graceperiod').parent('tr').within(() => {
-                                if (AmortDetails.principalGracePeriod) action.select(undefined, AmortDetails.principalGracePeriod);
-                            });
-                        });
-
-                        // Fixed Principal Amort
-                        field('Fixed Principal Amort', () => {
-                            cy.contains('td', 'Fixed Principal Amort').parent('tr').within(() => {
-                                if (AmortDetails.fixedPrincipalAmort) action.input(undefined, AmortDetails.fixedPrincipalAmort);
-                            });
-                        });
-
-                        // Irregular Principal Amort
-                        field('Irregular Prncpl Amort', () => {
-                            cy.contains('td', 'Irregular Prncpl Amort').parent('tr').within(() => {
-                                if (AmortDetails.irregPrincipalAmort) action.input(undefined, AmortDetails.irregPrincipalAmort);
-                            });
-                        });
-
-                        // ----------------------------------------
-                        // PARTIAL DEDUCTIONS
-                        // ----------------------------------------
-                        // Interest Amortized
-                        field('Interest Amortized', () => {
-                            cy.contains('td', 'Interest Amortized').parent('tr').within(() => {
-                                if (AmortDetails.interestAmort) action.select(undefined, AmortDetails.interestAmort);
-                            });
-                        });
-
-                        // S.C. Amortized
-                        field('S.C. Amortized', () => {
-                            cy.contains('td', 'S.C. Amortized').parent('tr').within(() => {
-                                if (AmortDetails.scAmort) action.select(undefined, AmortDetails.scAmort);
-                            });
-                        });
-                    });
-                });
+                // ----------------------------------------
+                // AMORT OPTIONS
+                // ----------------------------------------
+                if (LoanAppDetails || AmortDetails) {
+                    handleAmortOptions(LoanAppDetails, AmortDetails);
+                }
 
                 cy.get('.relative:visible', { timeout: 20000 }).then(() => {
                     cy.log('entered tab container');
-                    // probably will make specific handler for each tab to organize
                     // ----------------------------------------
                     // GENERAL TAB
                     // ----------------------------------------
