@@ -1,6 +1,7 @@
 import lending from '@support/routes/lending';
-import handleOtherDetailsTab from '@support/handlers/Application-Release/handleOtherDetails';
 import handleAmortOptions from '@support/handlers/Application-Release/handleAmortOptions';
+import handleGeneralTab from '@support/handlers/Application-Release/handleGeneral';
+import handleOtherDetailsTab from '@support/handlers/Application-Release/handleOtherDetails';
 
 Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
     const {
@@ -11,11 +12,17 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
         visitAmortizationTab = true,
         visitOtherDetailsTab = true,
         visitSummaryTab = true,
-        triggerSubmit = {},
+        triggerSubmit = {
+            general: false,
+            amortization: false,
+            other_details: false,
+            summary: false
+        },
         finalSubmit = true,
         data = {
             loan_app_details: [],
             amort_details: [],
+            general: [],
             other_details: []
         }
     } = loan_application_data;
@@ -113,6 +120,7 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
     }).then(() => {
         const LoanAppDetails = data.loan_app_details[0] || {};
         const AmortDetails = data.amort_details[0] || {};
+        const GeneralDetails = data.general[0] || {};
         const OtherDetails = data.other_details[0] || {};
         
         cy.get('body').then($body => {
@@ -132,6 +140,8 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                     if (visitGeneralTab) {
                         cy.log('general');
                         if (triggerSubmit.general) cy.contains('.v-btn__content', 'submit').click({ force: true });
+
+                        handleGeneralTab(GeneralDetails);
                     }
 
                     // ----------------------------------------
@@ -162,7 +172,9 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                                 cy.wrap(other_details).click({ force: true, timeout: 5000 });
                             });
 
-                            if (triggerSubmit.other_details) cy.contains('.v-btn__content', 'submit').click({ force: true });
+                            if (triggerSubmit.other_details) {
+                                cy.contains('.v-btn__content', 'submit').click({ force: true });
+                            }
 
                             handleOtherDetailsTab(OtherDetails);
                         } else {
