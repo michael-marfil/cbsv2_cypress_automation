@@ -4,7 +4,10 @@ export default function handleOtherDetailsTab(data) {
     cy.get('.tabContainer:visible', { timeout: 10000 }).then(() => {
         cy.get('.v-form.form-section:visible', { timeout: 10000 }).then(() => {
             // helper function to safely interact with a field
-            const field = (label, callback) => {
+            const field = (label, callback, waitTime = 500) => {
+                // Always wait a bit by default to let UI settle
+                cy.wait(waitTime, { log: false });
+
                 cy.get('body').then($body => {
                     // Check if any td or label contains exactly this text
                     const allElements = $body[0].querySelectorAll('td, td label');
@@ -29,81 +32,112 @@ export default function handleOtherDetailsTab(data) {
 
             cy.get('table:visible', { timeout: 10000 }).then(() => {
                 // Release Tag
-                field('Release Tag', () => {
-                    cy.contains('td', 'Release Tag').parent('tr').within(() => {
-                        if (data.releaseTag) action.select(undefined, data.releaseTag);
+                if (data.releaseTag) {
+                    field('Release Tag', () => {
+                        cy.contains('td', 'Release Tag').parent('tr').within(() => {
+                            action.select(undefined, data.releaseTag);
+                        });
                     });
-                });
+                }
 
                 // Loan Officer
-                field('Loan Officer', () => {
-                    cy.contains('td', 'Loan Officer').parent('tr').within(() => {
-                        if (data.loanOfficer) action.autocomplete(undefined, data.loanOfficer);
+                if (data.loanOfficer) {
+                    field('Loan Officer', () => {
+                        cy.contains('td', 'Loan Officer').parent('tr').within(() => {
+                            action.autocomplete(undefined, data.loanOfficer);
+                        });
                     });
-                });
+                }
 
                 // Co Borrower
-                field('Co Borrower', () => {
-                    cy.contains('td', 'Co Borrower').parent('tr').within(() => {
-                        if (data.coBorrower) action.autocomplete(undefined, data.coBorrower);
-                    });
-                });
+                if (data.coBorrower) {
+                    field('Co Borrower', () => {
+                        cy.contains('td', 'Co Borrower').parent('tr').within(() => {
+                            action.autocomplete(undefined, data.coBorrower);
+                        });
+                    });   
+                }
 
                 // Co-Maker 1
-                field('Co-Maker 1', () => {
-                    cy.contains('td', 'Co-Maker 1').parent('tr').within(() => {
-                        if (data.coMaker1) action.autocomplete(undefined, data.coMaker1);
+                if (data.coMaker1) {
+                    field('Co-Maker 1', () => {
+                        cy.contains('td', 'Co-Maker 1').parent('tr').within(() => {
+                            action.autocomplete(undefined, data.coMaker1);
+                        });
                     });
-                });
+                }
 
                 // Loan Security
-                field('Loan Security', () => {
-                    cy.contains('td', 'Loan Security').parent('tr').within(() => {
-                        if (data.loanSecurity) action.select(undefined, data.loanSecurity);
+                if (data.loanSecurity) {
+                    field('Loan Security', () => {
+                        cy.contains('td', 'Loan Security').parent('tr').within(() => {
+                            action.select(undefined, data.loanSecurity);
+                        });
                     });
-                });
+                }
 
                 // Borrower Type
-                field('Borrower Type', () => {
-                    cy.contains('td', 'Borrower Type').parent('tr').within(() => {
-                        if (data.borrowerType) action.autocomplete(undefined, data.borrowerType);
+                if (data.borrowerType) {
+                    field('Borrower Type', () => {
+                        cy.contains('td', 'Borrower Type').parent('tr').within(() => {
+                            action.autocomplete(undefined, data.borrowerType);
+                        });
                     });
-                });
+                }
 
                 // Client Group
-                field('Client Group', () => {
-                    cy.contains('td', 'Client Group').parent('tr').within(() => {
-                        if (data.clientGroup) action.autocomplete(undefined, data.clientGroup);
+                if (data.clientGroup) {
+                    field('Client Group', () => {
+                        cy.contains('td', 'Client Group').parent('tr').within(() => {
+                            action.autocomplete(undefined, data.clientGroup);
+                        });
                     });
-                });
+                }
 
                 // Loan Purpose Text
-                field('Loan Purpose Text', () => {
-                    cy.contains('td', /^\sLoan Purpose Text\s$/).parent('tr').within(() => {
-                        if (data.loanPurposeTxt) action.input(undefined, data.loanPurposeTxt);
+                if (data.loanPurposeTxt) {
+                    field('Loan Purpose Text', () => {
+                        cy.contains('td', /^\sLoan Purpose Text\s$/).parent('tr').within(() => {
+                            action.input(undefined, data.loanPurposeTxt);
+                        });
                     });
-                });
+                }
 
                 // Loan Purpose
-                field('Loan Purpose', () => {
-                    cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
-                        if (data.loanPurpose) action.autocomplete(undefined, data.loanPurpose);
+                if (data.loanPurpose) {
+                    field('Loan Purpose', () => {
+                        cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
+                            action.autocomplete(undefined, data.loanPurpose);
+                        });
                     });
-                });
+                }
 
                 // Loan Classification
-                field('Loan Classification', () => {
-                    cy.contains('td', 'Loan Classification').parent('tr').within(() => {
-                        if (data.loanClass) action.select(undefined, data.loanClass);
+                if (data.loanPurpose && data.loanClass) {
+                    field('Loan Classification', () => {
+                        cy.contains('td', 'Loan Classification').parent('tr').within(() => {
+                            action.select(undefined, data.loanClass);
+                        });
                     });
-                });
+                }
+
+                // Industry
+                if (data.industry) {
+                    field('Industry', () => {
+                        cy.contains('td', 'Industry').parent('tr').within(() => {
+                            action.select(undefined, data.industry);
+                        });
+                    });
+                }
 
                 // Sales Lead Generation
-                field('Sales Lead Generation', () => {
-                    cy.contains('td', 'Sales Lead Generation').parent('tr').within(() => {
-                        if (data.salesLeadGen) action.select(undefined, data.salesLeadGen);
-                    });
-                });    
+                if (data.salesLeadGen) {
+                    field('Sales Lead Generation', () => {
+                        cy.contains('td', 'Sales Lead Generation').parent('tr').within(() => {
+                            action.select(undefined, data.salesLeadGen);
+                        });
+                    }); 
+                }
 
 
             });

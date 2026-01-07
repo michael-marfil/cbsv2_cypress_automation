@@ -33,6 +33,9 @@ export const action = {
                         }
                     });
             });
+
+            // Wait for menu to close before continuing
+            cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
         }
     },
 
@@ -56,6 +59,9 @@ export const action = {
                             .click({ force: true });
                     });
                 });
+
+            // Wait for menu to close before continuing
+            cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
         }
     }
 
