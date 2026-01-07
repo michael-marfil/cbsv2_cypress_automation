@@ -3,7 +3,8 @@ export const action = {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
-                .clear()
+                .click({ force: true })
+                .type('{selectall}', { delay: 50 })
                 .type(value, { delay: 100 });
         }
     },

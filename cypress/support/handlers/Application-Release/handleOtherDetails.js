@@ -9,7 +9,7 @@ export default function handleOtherDetailsTab(data) {
                     // Check if any td or label contains exactly this text
                     const allElements = $body[0].querySelectorAll('td, td label');
                     const found = Array.from(allElements).some(el => 
-                        el.textContent.trim() === label
+                        el.innerText && el.innerText.trim() === label
                     );
                     
                     if (found) {
@@ -79,14 +79,14 @@ export default function handleOtherDetailsTab(data) {
 
                 // Loan Purpose Text
                 field('Loan Purpose Text', () => {
-                    cy.contains('td', 'Loan Purpose Text').parent('tr').within(() => {
+                    cy.contains('td', /^\sLoan Purpose Text\s$/).parent('tr').within(() => {
                         if (data.loanPurposeTxt) action.input(undefined, data.loanPurposeTxt);
                     });
                 });
 
                 // Loan Purpose
                 field('Loan Purpose', () => {
-                    cy.contains('td', 'Loan Purpose').parent('tr').within(() => {
+                    cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
                         if (data.loanPurpose) action.autocomplete(undefined, data.loanPurpose);
                     });
                 });
