@@ -118,10 +118,10 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
             });
         });
     }).then(() => {
-        const LoanAppDetails = data.loan_app_details[0] || {};
-        const AmortDetails = data.amort_details[0] || {};
-        const GeneralDetails = data.general[0] || {};
-        const OtherDetails = data.other_details[0] || {};
+        const LoanAppDetails = data.loan_app_details?.[0] || null;
+        const AmortDetails = data.amort_details?.[0] || null;
+        const GeneralDetails = data.general?.[0] || null;
+        const OtherDetails = data.other_details?.[0] || null;
         
         cy.get('body').then($body => {
             cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
@@ -137,7 +137,7 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                     // ----------------------------------------
                     // GENERAL TAB
                     // ----------------------------------------
-                    if (visitGeneralTab) {
+                    if (visitGeneralTab && GeneralDetails) {
                         cy.log('general');
                         if (triggerSubmit.general) cy.contains('.v-btn__content', 'submit').click({ force: true });
 
@@ -164,7 +164,7 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                     // ----------------------------------------
                     // OTHER DETAILS TAB
                     // ----------------------------------------
-                    if (visitOtherDetailsTab) {
+                    if (visitOtherDetailsTab && OtherDetails) {
                         cy.log('other details');
                         const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
                         if (OtherDetailsTab) {

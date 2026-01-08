@@ -47,15 +47,19 @@ export const action = {
         }
     },
 
-    autocomplete: (selector = 'input[type="text"]', value) => {
+    autocomplete: (selector = 'input[type="text"]', value, search) => {
+        const toSearch = search ? search : value;
+
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
                 .type(value, { delay: 100, timeout: 5000 })
                 .then(() => {
                     cy.root().closest('body').within(() => {
+                        // Use partial match - first 50 characters or less
+                        const partialSearch = toSearch.substring(0, 50);
                         cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
-                            .contains(value)
+                            .contains(partialSearch)
                             .click({ force: true });
                     });
                 });

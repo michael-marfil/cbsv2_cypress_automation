@@ -104,6 +104,26 @@ class Database {
     }
 
     /**
+     * @param {number|null} loanpurposeid - Optional loan purpose ID
+     * @returns loan purpose data
+     */
+    loan_purpose(loanpurposeid = null) {
+        if (loanpurposeid) {
+            return cy.task('query', `SELECT name FROM lending_loanpurpose WHERE loanpurposeid = ${loanpurposeid}`)
+                .then(rows => rows && rows.length > 0 ? rows[0] : null);
+        }
+        return this.getOne('select.lending.loanpurpose').then(row => row ?? null);
+    }
+
+    /**
+     * @param {number|null} loanpurposeid 
+     * @returns loan class data
+     */
+    loan_class(loanpurposeid) {
+        return this.getOne('select.lending.loanclass', loanpurposeid).then(row => row ?? null);
+    }
+
+    /**
      * @returns product settings for given product name (or null if none)
      */
     savings_product(productname) {
