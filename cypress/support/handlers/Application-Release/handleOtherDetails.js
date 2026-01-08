@@ -1,4 +1,5 @@
 import { action } from '@support/helpers/UIHelper';
+import { db } from '@database';
 
 export default function handleOtherDetailsTab(otherDetails) {
     cy.get('.tabContainer:visible', { timeout: 10000 }).then(() => {
@@ -109,26 +110,40 @@ export default function handleOtherDetailsTab(otherDetails) {
                 // Loan Purpose
                 if (OtherDetails.loanPurpose) {
                     field('Loan Purpose', () => {
-                        cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
-                            action.autocomplete(undefined, OtherDetails.loanPurpose);
+                        db.loan_purpose(OtherDetails.loanPurpose).then(response => {
+                            const loanpurposename = response.name;
+                            const loanpurposeid = String(OtherDetails.loanPurpose).padStart(4, '0');
+                            cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
+                                action.autocomplete('input[type="text"]', loanpurposeid, loanpurposename);
+                            });
                         });
                     });
-                }
 
-                // Loan Classification
-                if (OtherDetails.loanPurpose && OtherDetails.loanClass) {
+                    // Loan Classification
                     field('Loan Classification', () => {
                         cy.contains('td', 'Loan Classification').parent('tr').within(() => {
-                            action.select(undefined, OtherDetails.loanClass);
+                            db.loan_class(OtherDetails.loanPurpose).then(response => {
+                                const className = response.classification_name;
+                                const loanClass = OtherDetails.loanClass;
+
+                                const toUse = loanClass ? loanClass : className;
+
+                                action.select(undefined, toUse);
+                            });
                         });
                     });
-                }
 
-                // Industry
-                if (OtherDetails.industry) {
+                    // Industry
                     field('Industry', () => {
                         cy.contains('td', 'Industry').parent('tr').within(() => {
-                            action.select(undefined, OtherDetails.industry);
+                            db.loan_class(OtherDetails.loanPurpose).then(response => {
+                                const industryName = response.industry_name;
+                                const industry = OtherDetails.industry;
+
+                                const toUse = industry ? industry : industryName;
+
+                                action.select(undefined, toUse);
+                            });
                         });
                     });
                 }

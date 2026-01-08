@@ -42,7 +42,27 @@ export const sql = {
          */
         // Loan Product Settings
         'lending.loanproductsettings': `SELECT * FROM lending_loanproducts WHERE NAME = ?`,
-
+        // Loan Purpose
+        'lending.loanpurpose': `SELECT loanpurposeid, name FROM lending_loanpurpose WHERE childcount = 0 ORDER BY RAND() LIMIT 1`,
+        'lending.loanclass': `SELECT 
+                lp.loanpurposeid, 
+                lp.name AS purpose_name,
+                lc.loanclassid,
+                lc.name AS classification_name,
+                li.industryname AS industry_name
+            FROM lending_loanpurpose lp
+            INNER JOIN lending_loanclassperpurpose lcpp 
+                ON lp.loanpurposeid = lcpp.loanpurposeid
+            INNER JOIN lending_loanclassifications lc 
+                ON lcpp.loanclassid = lc.loanclassid
+            INNER JOIN lending_industryperloanclass lipc
+                ON lc.loanclassid = lipc.loanclassid
+            INNER JOIN lending_industries li
+                ON lipc.industryid = li.industryid
+            WHERE lp.loanpurposeid = ?
+            ORDER BY RAND() 
+            LIMIT 1`,
+            
         /**
          * CASA
          */
