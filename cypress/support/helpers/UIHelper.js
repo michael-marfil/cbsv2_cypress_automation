@@ -48,7 +48,8 @@ export const action = {
     },
 
     autocomplete: (selector = 'input[type="text"]', value, search) => {
-        const toSearch = search ? search : value;
+        // determine and convert to String the data to be used
+        const toSearch = search ? String(search) : String(value);
 
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })

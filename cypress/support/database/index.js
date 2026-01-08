@@ -137,6 +137,13 @@ class Database {
         return this.getAll('select.general.clients', firstname, middlename, lastname);
     }
 
+    /**
+     * @returns list of random employees (loan officer)
+     */
+    loan_officer() {
+        return this.getOne('select.general.employees').then(row => row ?? null);
+    }
+
     // ------ UPDATE OPERATIONS ------
 
     // ------ INSERT OPERATIONS ------
