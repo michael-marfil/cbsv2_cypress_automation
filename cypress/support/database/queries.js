@@ -77,6 +77,8 @@ export const sql = {
             CONCAT(firstname, ' ', LEFT(middlename, 1), '.', ' ', lastname) AS accountname 
             FROM general_clients 
             WHERE firstname = ? AND middlename = ? AND lastname = ?`,
+        // Employees
+        'general.employees': `SELECT employeeid FROM general_employees ORDER BY RAND() LIMIT 1`
     }
 
     /**
