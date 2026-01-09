@@ -144,6 +144,13 @@ class Database {
         return this.getOne('select.general.employees').then(row => row ?? null);
     }
 
+    /**
+     * @returns clientid (for coborrower)
+     */
+    co_borrower() {
+        return this.getOne('select.general.co-borrower').then(row => row ?? null);
+    }
+
     // ------ UPDATE OPERATIONS ------
 
     // ------ INSERT OPERATIONS ------

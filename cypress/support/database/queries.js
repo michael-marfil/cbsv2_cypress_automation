@@ -78,7 +78,9 @@ export const sql = {
             FROM general_clients 
             WHERE firstname = ? AND middlename = ? AND lastname = ?`,
         // Employees
-        'general.employees': `SELECT employeeid FROM general_employees ORDER BY RAND() LIMIT 1`
+        'general.employees': `SELECT employeeid FROM general_employees ORDER BY RAND() LIMIT 1`,
+        // Co Borrower
+        'general.co-borrower': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`
     }
 
     /**
