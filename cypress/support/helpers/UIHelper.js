@@ -1,4 +1,21 @@
+/**
+ * UIHelper
+ * ----------------------------------------------------------------------
+ * Purpose:
+ * A collection of reusable Cypress commands for interacting with common UI elements.
+ * These actions handle waiting, visibility checks, and common interaction patterns
+ * to make test code more concise and reliable.
+ *
+ * @author Michael
+ */
 export const action = {
+    /**
+     * Inputs text into a text field
+     * -----------------------------
+     * @param {string} [selector='input[type="text"]'] - CSS selector for the input element
+     * @param {string|number} value - Text value to input into the field
+     * 
+     */
     input: (selector = 'input[type="text"]', value) => {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
@@ -9,6 +26,13 @@ export const action = {
         }
     },
 
+    /**
+     * Selects an option from a Vuetify dropdown/select component
+     * ----------------------------------------------------------
+     * @param {string} [selector='.v-select__selections'] - CSS selector for the select element
+     * @param {number|string} value - Index (0-based) or exact text of the option to select
+     * 
+     */
     select: (selector = '.v-select__selections', value) => {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
@@ -23,10 +47,12 @@ export const action = {
                         if (typeof value === 'number') {
                             cy.get('.v-list-item:visible')
                                 .eq(value)
+                                .scrollIntoView({ easing: 'linear', duration: 500 })
                                 .click({ force: true });
                         } else if (typeof value === 'string') {
                             cy.get('.v-list-item:visible')
                                 .filter((i, el) => el.innerText.trim() === value)
+                                .scrollIntoView({ easing: 'linear', duration: 500 })
                                 .click({ force: true });
                         } else {
                             cy.log('Invalid value type.');
@@ -39,6 +65,13 @@ export const action = {
         }
     },
 
+    /**
+     * Clicks on a checkbox to toggle its checked state
+     * ------------------------------------------------
+     * @param {string} [selector='input[type="checkbox"]'] - CSS selector for the checkbox element
+     * @param {any} value - Any truthy value to trigger the click action
+     * 
+     */
     check: (selector = 'input[type="checkbox"]', value) => {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
@@ -47,6 +80,18 @@ export const action = {
         }
     },
 
+    /**
+     * Selects an option from an autocomplete/combobox component
+     * ---------------------------------------------------------
+     * Types into an autocomplete field and selects a matching option from the dropdown menu.
+     * Uses partial matching (first 50 characters) to handle long option texts.
+     * 
+     * @param {string} [selector='input[type="text"]'] - CSS selector for the autocomplete input
+     * @param {string|number} value - Text to type into the autocomplete field
+     * @param {string} [search] - Optional override for the search term used to match dropdown items.
+     *                            If not provided, uses the value parameter.
+     * 
+     */
     autocomplete: (selector = 'input[type="text"]', value, search) => {
         // determine and convert to String the data to be used
         const toSearch = search ? String(search) : String(value);
