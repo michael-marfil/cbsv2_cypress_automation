@@ -1,11 +1,13 @@
 import { action } from '@support/helpers/UIHelper';
 import { db } from '@database';
 
-export default function handleOtherDetailsTab(otherDetails) {
+export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
     cy.get('.tabContainer:visible', { timeout: 10000 }).then(() => {
         cy.get('.v-form.form-section:visible', { timeout: 10000 }).then(() => {
             
             const OtherDetails = otherDetails;
+            // check first if trigger submit is true before actual process
+            if (triggerSubmit) cy.get('.v-btn__content:visible').contains('submit').click({ force: true });
 
             // helper function to safely interact with a field
             const field = (label, callback, waitTime = 500) => {
