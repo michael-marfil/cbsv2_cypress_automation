@@ -124,6 +124,13 @@ class Database {
     }
 
     /**
+     * @returns random loan security
+     */
+    loan_security() {
+        return this.getOne('select.lending.loansecurity').then(row => row ?? null);
+    }
+
+    /**
      * @returns product settings for given product name (or null if none)
      */
     savings_product(productname) {

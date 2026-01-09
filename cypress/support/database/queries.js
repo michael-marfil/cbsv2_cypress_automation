@@ -44,6 +44,7 @@ export const sql = {
         'lending.loanproductsettings': `SELECT * FROM lending_loanproducts WHERE NAME = ?`,
         // Loan Purpose
         'lending.loanpurpose': `SELECT loanpurposeid, name FROM lending_loanpurpose WHERE childcount = 0 ORDER BY RAND() LIMIT 1`,
+        // Loan Class
         'lending.loanclass': `SELECT 
                 lp.loanpurposeid, 
                 lp.name AS purpose_name,
@@ -62,6 +63,8 @@ export const sql = {
             WHERE lp.loanpurposeid = ?
             ORDER BY RAND() 
             LIMIT 1`,
+        // Loan Security
+        'lending.loansecurity': `SELECT * FROM lending_loansecurities ORDER BY RAND() LIMIT 1`,
             
         /**
          * CASA
