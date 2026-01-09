@@ -151,6 +151,13 @@ class Database {
         return this.getOne('select.general.co-borrower').then(row => row ?? null);
     }
 
+    /**
+     * @returns clientid (for comaker)
+     */
+    co_maker() {
+        return this.getOne('select.general.co-maker').then(row => row ?? null);
+    }
+
     // ------ UPDATE OPERATIONS ------
 
     // ------ INSERT OPERATIONS ------

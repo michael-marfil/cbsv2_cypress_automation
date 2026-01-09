@@ -80,7 +80,9 @@ export const sql = {
         // Employees
         'general.employees': `SELECT employeeid FROM general_employees ORDER BY RAND() LIMIT 1`,
         // Co Borrower
-        'general.co-borrower': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`
+        'general.co-borrower': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`,
+        // Co Maker
+        'general.co-maker': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`
     }
 
     /**
