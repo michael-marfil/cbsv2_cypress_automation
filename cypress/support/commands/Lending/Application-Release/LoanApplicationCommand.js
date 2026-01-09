@@ -133,29 +133,22 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                 }
 
                 cy.get('.relative:visible', { timeout: 20000 }).then(() => {
-                    cy.log('entered tab container');
                     // ----------------------------------------
                     // GENERAL TAB
                     // ----------------------------------------
                     if (visitGeneralTab && GeneralDetails) {
-                        cy.log('general');
-                        if (triggerSubmit.general) cy.contains('.v-btn__content', 'submit').click({ force: true });
-
-                        handleGeneralTab(GeneralDetails);
+                        handleGeneralTab(GeneralDetails, triggerSubmit.general);
                     }
 
                     // ----------------------------------------
                     // AMORTIZATION TAB
                     // ----------------------------------------
                     if (visitAmortizationTab) {
-                        cy.log('amortization');
                         const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
                         if (AmortTab) {
                             cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
                                 cy.wrap(amort).click({ force: true, timeout: 5000 });
                             });
-
-                            if (triggerSubmit.amortization) cy.contains('.v-btn__content', 'submit').click({ force: true });
                         } else {
                             cy.log('Skipping: Amortization Tab not found.');
                         }
@@ -165,18 +158,13 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                     // OTHER DETAILS TAB
                     // ----------------------------------------
                     if (visitOtherDetailsTab && OtherDetails) {
-                        cy.log('other details');
                         const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
                         if (OtherDetailsTab) {
                             cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
                                 cy.wrap(other_details).click({ force: true, timeout: 5000 });
                             });
 
-                            if (triggerSubmit.other_details) {
-                                cy.contains('.v-btn__content', 'submit').click({ force: true });
-                            }
-
-                            handleOtherDetailsTab(OtherDetails);
+                            handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
                         } else {
                             cy.log('Skipping: Other Details Tab not found.');
                         }
@@ -186,14 +174,11 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
                     // SUMMARY TAB
                     // ----------------------------------------
                     if (visitSummaryTab) {
-                        cy.log('summary');
                         const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
                         if (Summ) {
                             cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
                                 cy.wrap(summary).click({ force: true, timeout: 5000 });
                             });
-
-                            if (triggerSubmit.summary) cy.contains('.v-btn__content', 'submit').click({ force: true });
                         } else {
                             cy.log('Skipping: Summary Tab not found.');
                         }

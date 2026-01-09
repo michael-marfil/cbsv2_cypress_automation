@@ -1,6 +1,6 @@
 import { action } from '@support/helpers/UIHelper';
 
-export default function handleGeneralTab(generalDetails) {
+export default function handleGeneralTab(generalDetails, triggerSubmit) {
     cy.get('.tabContainer:visible', { timeout: 10000 }).then(() => {
         cy.get('.v-window-item.tab-content:visible', { timeout: 10000 }).within(() => {
             cy.get('div.v-data-table:visible', { timeout: 10000 }).eq(0).as('loan-details');
@@ -8,6 +8,8 @@ export default function handleGeneralTab(generalDetails) {
         });
 
         const GeneralDetails = generalDetails;
+        // check first if trigger submit is true before actual process
+        if (triggerSubmit) cy.get('.v-btn__content:visible').contains('submit').click({ force: true });
 
         // helper function to safely interact with a field
         const field = (label, callback, waitTime = 500) => {

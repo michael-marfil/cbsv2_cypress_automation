@@ -61,6 +61,7 @@ export const action = {
                         const partialSearch = toSearch.substring(0, 50);
                         cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
                             .contains(partialSearch)
+                            .scrollIntoView({ easing: 'linear', duration: 500 })
                             .click({ force: true });
                     });
                 });
