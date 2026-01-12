@@ -70,6 +70,9 @@ Cypress.Commands.add('approveLoanApplication', (clientid, productcode) => {
                 .should('be.oneOf', [200, 201]);
 
             cy.log(`approved loan application for client ${clientname}`);
+
+            // return pnid to be used in Loan Release
+            cy.wrap({ pnid });
         }
     });
 });
