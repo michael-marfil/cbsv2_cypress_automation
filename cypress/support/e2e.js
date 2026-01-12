@@ -62,6 +62,7 @@ import '@support/commands/Accounting/Journals/JournalPostingCommand';
  * Lending
  */
 import '@support/commands/Lending/Application-Release/LoanApplicationCommand';
+import '@support/commands/Lending/Application-Release/LoanReleaseCommand';
 import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand';
 
 /**
