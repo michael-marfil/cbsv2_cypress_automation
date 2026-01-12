@@ -159,6 +159,53 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                     }); 
                 }
 
+                // Proceeds Type
+                if (OtherDetails.proceedsType) {
+                    field('Proceeds Type', () => {
+                        cy.contains('td', 'Proceeds Type').parent('tr').within(() => {
+                            action.select(undefined, OtherDetails.proceedsType);
+                        });
+                    });
+                    
+                    cy.then(() => {
+                        switch (OtherDetails.proceedsType) {
+                            case 'Cash / CC':
+                                field('Cashier`s Check No.', () => {
+                                    cy.contains('td', 'Cashier`s Check No.').parent('tr').within(() => {
+                                        cy.log('Cash / CC selected');
+                                    });
+                                });
+                                break;
+                            case 'Credit Memo - Linked Account':
+                                field('Credit Memo Ref.', () => {
+                                    cy.contains('td', 'Credit Memo Ref.').parent('tr').within(() => {
+                                        cy.log('Linked Account selected');
+                                    });
+                                });
+                                break;
+                            case 'Credit Memo - Other Account':
+                                field('Proceeds Account', () => {
+                                    cy.contains('td', 'Proceeds Account').parent('tr').within(() => {
+                                        cy.log('proceeds account');
+                                    });
+                                });
+
+                                field('Credit Memo Ref.', () => {
+                                    cy.contains('td', 'Credit Memo Ref.').parent('tr').within(() => {
+                                        cy.log('credit memo ref')
+                                    });
+                                });
+                                break;
+                            case 'Check/COCI':
+                                field('Check No.', () => {
+                                    cy.contains('td', 'Check No.').parent('tr').within(() => {
+                                        cy.log('Check selected');
+                                    });
+                                });
+                                break;
+                        }
+                    });
+                }
 
             });
 
