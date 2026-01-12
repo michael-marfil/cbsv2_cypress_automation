@@ -3,7 +3,7 @@ import handleAmortOptions from '@support/handlers/Application-Release/handleAmor
 import handleGeneralTab from '@support/handlers/Application-Release/handleGeneral';
 import handleOtherDetailsTab from '@support/handlers/Application-Release/handleOtherDetails';
 
-Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
+Cypress.Commands.add('loanApplication', ({ loan_application_data = {} } = {}) => {
     const {
         loanproductid = null,
         loan_product = null,
@@ -26,163 +26,181 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} }) => {
             other_details: []
         }
     } = loan_application_data;
-    
-    // intercept the application/release page
-    cy.intercept('GET', '**/lending/application-release/initial-data').as('app-release');
-    cy.intercept({
-        method: 'GET',
-        pathname: '**/lending/application/release/details',
-        query: {
-            process: 'apply1',
-            clientid: clientid.toString(),
-            loanproductid: loanproductid.toString(),
-            pnid: '0'
-        }
-    }).as('loan-app-details');
+
+    // check if loan data is present
+    const hasLoanData = loan_product && clientid;
 
     // visit Application/Release
     lending.goToApplicationRelease({ timeout: 20000 });
+    
+    // intercept the application/release page
+    cy.intercept('GET', '**/lending/application-release/initial-data').as('app-release');
+    
+    if (hasLoanData) {
+        cy.intercept({
+            method: 'GET',
+            pathname: '**/lending/application/release/details',
+            query: {
+                process: 'apply1',
+                clientid: clientid.toString(),
+                loanproductid: loanproductid.toString(),
+                pnid: '0'
+            }
+        }).as('loan-app-details');
+    }
 
-    cy.wait('@app-release', { timeout: 60000 }).then((interception) => {
-        const products = interception.response.body.products;
-        const productExists = products.find(p => p.loanproductname === loan_product);
-
-        if (!productExists) {
-            throw new Error(`Loan product "${loan_product}" not found in available products`);
+    return cy.hasPageAccess().then(({ hasAccess }) => {
+        if (!hasAccess) {
+            cy.log('user has no page access.');
+            return;
         }
 
-        cy.log(`found product: ${JSON.stringify(productExists)}`);
+        if (!hasLoanData) {
+            cy.log('No loan data provided.');
+            return;
+        }
 
-        cy.get('.transaction-card.v-card:visible', { timeout: 5000 }).then(() => {
-            cy.get('.v-form:visible', { timeout: 5000 }).then(() => {
-                cy.contains('strong', 'LOAN APPLICATION')
-                    .closest('tr')
-                    .nextUntil('tr:has(hr)')
-                    .as('LoanApplicationRow');
+        cy.wait('@app-release', { timeout: 60000 }).then((interception) => {
+            const products = interception.response.body.products;
+            const productExists = products.find(p => p.loanproductname === loan_product);
 
-                // target specific fields withing the row
-                // Loan Product
-                cy.get('@LoanApplicationRow')
-                    .contains('Loan Product')
-                    .parents('tr')
-                    .find('.v-select__selections', { timeout: 5000 })
-                    .click({ force: true });
+            if (!productExists) {
+                throw new Error(`Loan product "${loan_product}" not found in available products`);
+            }
 
-                    cy.get('.v-menu__content:visible', { timeout: 5000 }).then($menu => {
-                        const menuEl = $menu[0];
-                        let lastScrollTop = -1;
+            cy.log(`found product: ${JSON.stringify(productExists)}`);
 
-                        const scrollAndFind = (attempts = 0, maxAttempts = 20) => {
-                            if (attempts >= maxAttempts) throw new Error(`Loan Product '${loan_product}' not found after ${maxAttempts} scroll attempts.`);
+            cy.get('.transaction-card.v-card:visible', { timeout: 5000 }).then(() => {
+                cy.get('.v-form:visible', { timeout: 5000 }).then(() => {
+                    cy.contains('strong', 'LOAN APPLICATION')
+                        .closest('tr')
+                        .nextUntil('tr:has(hr)')
+                        .as('LoanApplicationRow');
 
-                            // check if reached the bottom (no more scrolling possible)
-                            if (lastScrollTop === menuEl.scrollTop && attempts > 0) {
-                                throw new Error(`Loan Product '${loan_product}' not found - reached end of list.`);
-                            }
+                    // target specific fields withing the row
+                    // Loan Product
+                    cy.get('@LoanApplicationRow')
+                        .contains('Loan Product')
+                        .parents('tr')
+                        .find('.v-select__selections', { timeout: 5000 })
+                        .click({ force: true });
 
-                            lastScrollTop = menuEl.scrollTop;
+                        cy.get('.v-menu__content:visible', { timeout: 5000 }).then($menu => {
+                            const menuEl = $menu[0];
+                            let lastScrollTop = -1;
 
-                            // scroll down by a chunk
-                            menuEl.scrollTop += 300;
+                            const scrollAndFind = (attempts = 0, maxAttempts = 20) => {
+                                if (attempts >= maxAttempts) throw new Error(`Loan Product '${loan_product}' not found after ${maxAttempts} scroll attempts.`);
 
-                            cy.wait(200, { log: false }).then(() => {
-                                // check if item exists
-                                const $items = Cypress.$('.v-menu__content:visible .v-list-item__content');
-                                const found = $items.toArray().some(item => item.textContent.includes(loan_product) );
-
-                                if (found) {
-                                    // item found, click it
-                                    cy.get('.v-menu__content:visible', { timeout: 5000 })
-                                        .contains('.v-list-item__content', loan_product)
-                                        .scrollIntoView({ easing: 'linear', duration: 500 })
-                                        .click({ force: true });
-                                } else {
-                                    // not found yet, scroll more
-                                    scrollAndFind(attempts + 1, maxAttempts);
+                                // check if reached the bottom (no more scrolling possible)
+                                if (lastScrollTop === menuEl.scrollTop && attempts > 0) {
+                                    throw new Error(`Loan Product '${loan_product}' not found - reached end of list.`);
                                 }
-                            });
-                        }
-                        
-                        scrollAndFind();
-                    });
 
-                // Client Name
-                cy.get('@LoanApplicationRow')
-                    .contains('Client Name')
-                    .parents('tr')
-                    .find('input[type="text"]', { timeout: 5000 })
-                    .type(clientid, { delay: 100, timeout: 5000 })
-                    .then(() => {
-                        cy.get('.v-menu__content .v-list :visible', { timeout: 5000 }).contains(clientid).click({ force: true });
-                    });
+                                lastScrollTop = menuEl.scrollTop;
+
+                                // scroll down by a chunk
+                                menuEl.scrollTop += 300;
+
+                                cy.wait(200, { log: false }).then(() => {
+                                    // check if item exists
+                                    const $items = Cypress.$('.v-menu__content:visible .v-list-item__content');
+                                    const found = $items.toArray().some(item => item.textContent.includes(loan_product) );
+
+                                    if (found) {
+                                        // item found, click it
+                                        cy.get('.v-menu__content:visible', { timeout: 5000 })
+                                            .contains('.v-list-item__content', loan_product)
+                                            .scrollIntoView({ easing: 'linear', duration: 500 })
+                                            .click({ force: true });
+                                    } else {
+                                        // not found yet, scroll more
+                                        scrollAndFind(attempts + 1, maxAttempts);
+                                    }
+                                });
+                            }
+                            
+                            scrollAndFind();
+                        });
+
+                    // Client Name
+                    cy.get('@LoanApplicationRow')
+                        .contains('Client Name')
+                        .parents('tr')
+                        .find('input[type="text"]', { timeout: 5000 })
+                        .type(clientid, { delay: 100, timeout: 5000 })
+                        .then(() => {
+                            cy.get('.v-menu__content .v-list :visible', { timeout: 5000 }).contains(clientid).click({ force: true });
+                        });
+                });
             });
-        });
-    }).then(() => {
-        const LoanAppDetails = data.loan_app_details?.[0] || null;
-        const AmortDetails = data.amort_details?.[0] || null;
-        const GeneralDetails = data.general?.[0] || null;
-        const OtherDetails = data.other_details?.[0] || null;
-        
-        cy.get('body').then($body => {
-            cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
-                // ----------------------------------------
-                // AMORT OPTIONS
-                // ----------------------------------------
-                if (LoanAppDetails || AmortDetails) {
-                    handleAmortOptions(LoanAppDetails, AmortDetails);
-                }
-
-                cy.get('.relative:visible', { timeout: 20000 }).then(() => {
+        }).then(() => {
+            const LoanAppDetails = data.loan_app_details?.[0] || null;
+            const AmortDetails = data.amort_details?.[0] || null;
+            const GeneralDetails = data.general?.[0] || null;
+            const OtherDetails = data.other_details?.[0] || null;
+            
+            cy.get('body').then($body => {
+                cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
                     // ----------------------------------------
-                    // GENERAL TAB
+                    // AMORT OPTIONS
                     // ----------------------------------------
-                    if (visitGeneralTab && GeneralDetails) {
-                        handleGeneralTab(GeneralDetails, triggerSubmit.general);
+                    if (LoanAppDetails || AmortDetails) {
+                        handleAmortOptions(LoanAppDetails, AmortDetails);
                     }
 
-                    // ----------------------------------------
-                    // AMORTIZATION TAB
-                    // ----------------------------------------
-                    if (visitAmortizationTab) {
-                        const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
-                        if (AmortTab) {
-                            cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
-                                cy.wrap(amort).click({ force: true, timeout: 5000 });
-                            });
-                        } else {
-                            cy.log('Skipping: Amortization Tab not found.');
+                    cy.get('.relative:visible', { timeout: 20000 }).then(() => {
+                        // ----------------------------------------
+                        // GENERAL TAB
+                        // ----------------------------------------
+                        if (visitGeneralTab && GeneralDetails) {
+                            handleGeneralTab(GeneralDetails, triggerSubmit.general);
                         }
-                    }
 
-                    // ----------------------------------------
-                    // OTHER DETAILS TAB
-                    // ----------------------------------------
-                    if (visitOtherDetailsTab && OtherDetails) {
-                        const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
-                        if (OtherDetailsTab) {
-                            cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
-                                cy.wrap(other_details).click({ force: true, timeout: 5000 });
-                            });
-
-                            handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
-                        } else {
-                            cy.log('Skipping: Other Details Tab not found.');
+                        // ----------------------------------------
+                        // AMORTIZATION TAB
+                        // ----------------------------------------
+                        if (visitAmortizationTab) {
+                            const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
+                            if (AmortTab) {
+                                cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
+                                    cy.wrap(amort).click({ force: true, timeout: 5000 });
+                                });
+                            } else {
+                                cy.log('Skipping: Amortization Tab not found.');
+                            }
                         }
-                    }
 
-                    // ----------------------------------------
-                    // SUMMARY TAB
-                    // ----------------------------------------
-                    if (visitSummaryTab) {
-                        const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
-                        if (Summ) {
-                            cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
-                                cy.wrap(summary).click({ force: true, timeout: 5000 });
-                            });
-                        } else {
-                            cy.log('Skipping: Summary Tab not found.');
+                        // ----------------------------------------
+                        // OTHER DETAILS TAB
+                        // ----------------------------------------
+                        if (visitOtherDetailsTab && OtherDetails) {
+                            const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
+                            if (OtherDetailsTab) {
+                                cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
+                                    cy.wrap(other_details).click({ force: true, timeout: 5000 });
+                                });
+
+                                handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
+                            } else {
+                                cy.log('Skipping: Other Details Tab not found.');
+                            }
                         }
-                    }
+
+                        // ----------------------------------------
+                        // SUMMARY TAB
+                        // ----------------------------------------
+                        if (visitSummaryTab) {
+                            const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
+                            if (Summ) {
+                                cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
+                                    cy.wrap(summary).click({ force: true, timeout: 5000 });
+                                });
+                            } else {
+                                cy.log('Skipping: Summary Tab not found.');
+                            }
+                        }
+                    });
                 });
             });
         });
