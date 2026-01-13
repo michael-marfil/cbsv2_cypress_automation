@@ -50,6 +50,7 @@ import '@support/helpers/GetHelper';
 // import '@support/seeders/sample_api';
 import '@support/seeders/LoanProductSeeder';
 import '@support/seeders/SavingsProductSeeder';
+import '@support/seeders/ClientSeeder';
 
 // ---------- CUSTOM COMMANDS ---------- //
 
