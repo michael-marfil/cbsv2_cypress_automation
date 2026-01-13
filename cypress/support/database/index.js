@@ -141,7 +141,7 @@ class Database {
      * @returns list of clients matching given names (or null if none)
      */
     clients(firstname, middlename, lastname) {
-        return this.getAll('select.general.clients', firstname, middlename, lastname);
+        return this.getOne('select.general.clients', firstname, middlename, lastname).then(row => row ?? null);
     }
 
     /**
