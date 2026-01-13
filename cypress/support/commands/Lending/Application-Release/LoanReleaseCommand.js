@@ -144,7 +144,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                                 cy.log('Skipping: Other Details Tab not found.');
                             }
                         }
-
+                        
                         // ----------------------------------------
                         // SUMMARY TAB
                         // ----------------------------------------
