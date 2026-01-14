@@ -150,6 +150,17 @@ class Database {
     }
 
     /**
+     * @returns random client group id
+     */
+    client_group(clientgroupid = null) {
+        if (clientgroupid) {
+            return cy.task('query', `SELECT name FROM lending_clientgroup WHERE clientgroupid = ${clientgroupid}`)
+                .then(rows => rows && rows.length > 0 ? rows[0] : null);
+        }
+        return this.getOne('select.lending.clientgroup').then(row => row ?? null);
+    }
+
+    /**
      * @returns product settings for given product name (or null if none)
      */
     savings_product(productname) {

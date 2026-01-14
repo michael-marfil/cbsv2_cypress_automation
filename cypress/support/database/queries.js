@@ -67,6 +67,8 @@ export const sql = {
             LIMIT 1`,
         // Loan Security
         'lending.loansecurity': `SELECT * FROM lending_loansecurities ORDER BY RAND() LIMIT 1`,
+        // Client Group
+        'lending.clientgroup': `SELECT clientgroupid FROM lending_clientgroup ORDER BY RAND() LIMIT 1`,
             
         /**
          * CASA

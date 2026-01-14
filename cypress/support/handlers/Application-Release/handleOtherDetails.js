@@ -94,8 +94,12 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                 // Client Group
                 if (OtherDetails.clientGroup) {
                     field('Client Group', () => {
-                        cy.contains('td', 'Client Group').parent('tr').within(() => {
-                            action.autocomplete(undefined, OtherDetails.clientGroup);
+                        db.client_group(OtherDetails.clientGroup).then(response => {
+                            const clientgroupname = response.name;
+                            const clientgroupid = String(OtherDetails.clientGroup).padStart(4, '0');
+                            cy.contains('td', 'Client Group').parent('tr').within(() => {
+                                action.autocomplete(undefined, clientgroupid, clientgroupname);
+                            });
                         });
                     });
                 }
