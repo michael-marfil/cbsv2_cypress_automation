@@ -20,9 +20,26 @@ export const action = {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
-                .click({ force: true })
-                .type('{selectall}', { delay: 50 })
-                .type(value, { delay: 100 });
+                .then($el => {
+                    // skip if disabled or readonly
+                    if ($el.is(':disabled') || $el.prop('readonly') || $el.attr('disabled') !== undefined) {
+                        cy.log('skipping: element disable');
+                        return;
+                    }
+
+                    // skip if value is already the same
+                    const currentValue = $el.val();
+                    if (currentValue === String(value)) {
+                        cy.log(`skipping: value already set to ${value}`);
+                        return
+                    }
+
+                    // otherwise, proceed
+                    cy.wrap($el)
+                        .click({ force: true })
+                        .type('{selectall}', { delay: 50 })
+                        .type(value, { delay: 100 });
+                });
         }
     },
 
@@ -37,31 +54,51 @@ export const action = {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
-                .click({ force: true });
+                .then($el => {
+                    // check if the select component is disabled
+                    const $selectWrapper = $el.closest('.v-select');
+                    if ($selectWrapper.hasClass('v-select input-readonly') || $selectWrapper.find('input').is(':disabled')) {
+                        cy.log('skipping: element is disabled');
+                        return;
+                    }
 
-            // Select from menu (works outside .within() because we use cy.get from root)
-            cy.root().closest('body').within(() => {
-                cy.get('.v-menu__content:visible .v-list-item', { timeout: 10000 })
-                    .should('have.length.greaterThan', 0)
-                    .then(() => {
-                        if (typeof value === 'number') {
-                            cy.get('.v-list-item:visible')
-                                .eq(value)
-                                .scrollIntoView({ easing: 'linear', duration: 500 })
-                                .click({ force: true });
-                        } else if (typeof value === 'string') {
-                            cy.get('.v-list-item:visible')
-                                .filter((i, el) => el.innerText.trim() === value)
-                                .scrollIntoView({ easing: 'linear', duration: 500 })
-                                .click({ force: true });
-                        } else {
-                            cy.log('Invalid value type.');
-                        }
+                    // get current selected value
+                    const currentText = $el.text().trim();
+                    const targetValue = typeof value === 'string' ? value : null;
+
+                    // skip if the same value is already selected
+                    if (targetValue && currentText === targetValue) {
+                        cy.log(`skipping: value ${targetValue} already selected`);
+                        return;
+                    }
+
+                    // otherwise, proceed
+                    cy.wrap($el).click({ force: true });
+
+                    // Select from menu (works outside .within() because we use cy.get from root)
+                    cy.root().closest('body').within(() => {
+                        cy.get('.v-menu__content:visible .v-list-item', { timeout: 10000 })
+                            .should('have.length.greaterThan', 0)
+                            .then(() => {
+                                if (typeof value === 'number') {
+                                    cy.get('.v-list-item:visible')
+                                        .eq(value)
+                                        .scrollIntoView({ easing: 'linear', duration: 500 })
+                                        .click({ force: true });
+                                } else if (typeof value === 'string') {
+                                    cy.get('.v-list-item:visible')
+                                        .filter((i, el) => el.innerText.trim() === value)
+                                        .scrollIntoView({ easing: 'linear', duration: 500 })
+                                        .click({ force: true });
+                                } else {
+                                    cy.log('Invalid value type.');
+                                }
+                            });
                     });
-            });
 
-            // Wait for menu to close before continuing
-            cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
+                    // Wait for menu to close before continuing
+                    cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
+                });
         }
     },
 
@@ -76,7 +113,26 @@ export const action = {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
-                .click({ force: true });
+                .then($el => {
+                    // skip if disabled
+                    if ($el.is(':disabled') || $el.attr('disabled') !== undefined) {
+                        cy.log('skipping: element is disabled');
+                        return;
+                    }
+
+                    // determine desired state
+                    const desiredChecked = Boolean(value);
+                    const currentChecked = $el.is(':checked');
+
+                    // skip if already in desired state
+                    if (currentChecked === desiredChecked) {
+                        cy.log(`skipping: checkbox already ${desiredChecked ? 'checked' : 'unchecked'}`);
+                        return;
+                    }
+
+                    // otherwise, proceed
+                    cy.wrap($el).click({ force: true });
+                });
         }
     },
 
@@ -99,20 +155,37 @@ export const action = {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
-                .type(value, { delay: 100, timeout: 5000 })
-                .then(() => {
-                    cy.root().closest('body').within(() => {
-                        // Use partial match - first 50 characters or less
-                        const partialSearch = toSearch.substring(0, 50);
-                        cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
-                            .contains(partialSearch)
-                            .scrollIntoView({ easing: 'linear', duration: 500 })
-                            .click({ force: true });
-                    });
-                });
+                .then($el => {
+                    // skip if disabled or readonly
+                    if ($el.is(':disabled') || $el.prop('readonly') || $el.attr('disabled') !== undefined) {
+                        cy.log('skipping: element is disabled');
+                        return;
+                    }
 
-            // Wait for menu to close before continuing
-            cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
+                    // skip if value is already the same
+                    const currentValue = $el.val();
+                    if (currentValue === String(value)) {
+                        cy.log(`skipping: value already set to ${value}`);
+                        return;
+                    }
+
+                    // otherwise, proceed
+                    cy.wrap($el)
+                        .type(value, { delay: 100, timeout: 5000 })
+                        .then(() => {
+                            cy.root().closest('body').within(() => {
+                                // Use partial match - first 50 characters or less
+                                const partialSearch = toSearch.substring(0, 50);
+                                cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
+                                    .contains(partialSearch)
+                                    .scrollIntoView({ easing: 'linear', duration: 500 })
+                                    .click({ force: true });
+                            });
+                        });
+
+                    // Wait for menu to close before continuing
+                    cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
+                });
         }
     }
 
