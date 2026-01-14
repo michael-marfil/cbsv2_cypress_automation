@@ -81,6 +81,15 @@ class FormatHelper {
                 return `${year}-${month}-${day}`; // default to y-m-d format
         }
     }
+
+    // helper for format loan product name
+    formatLoanProductName(shortname, name) {
+        if (!name && !shortname) return '';
+        if (!shortname) return String(name ?? '');
+        if (!name) return String(shortname ?? '');
+        
+        return `${shortname} (${name})`;
+    }
 }
 
 export default new FormatHelper();
