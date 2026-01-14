@@ -48,6 +48,11 @@ class Database {
         return this.query(key, params);
     }
 
+    // executes INSERT and returns inserted row
+    insertOne(key, ...params) {
+        return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
+    }
+
     // --- SPECIFIC QUERY WRAPPERS ---
     // Developers: Add your new query helper methods below this line,
     // which should wrap existing SQL queries using getOne/getAll/query.
@@ -101,6 +106,13 @@ class Database {
      */
     loan_product(loanproductname) {
         return this.getOne('select.lending.loanproductsettings', loanproductname).then(row => row ?? null);
+    }
+
+    /**
+     * @returns laon product to use for given userbranch and loanproductid (or null if none)
+     */
+    loan_product_to_use(userbranch, loanproductid) {
+        return this.getOne('select.lending.loanproducttouse', userbranch, loanproductid).then(row => row ?? null);
     }
 
     /**
@@ -168,6 +180,13 @@ class Database {
     // ------ UPDATE OPERATIONS ------
 
     // ------ INSERT OPERATIONS ------
+
+    /**
+     * @insert loan product to loan product to use
+     */
+    insert_loan_product_to_use(userbranch, loanproductid) {
+        return this.insertOne('insert.lending.loanproducttouse', userbranch, loanproductid);
+    }
 
     // ------ DELETE OPERATIONS ------
 }
