@@ -21,6 +21,28 @@ import { sql } from '@database/queries';
 class Database {
     constructor() {
         this.cache = new Map();
+
+        // --- ACTION WRAPPERS ---
+        // Core database operation methods that wrap the query function
+        const action = {
+            // returns first row or null
+            getOne(key, ...params) {
+                return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
+            },
+
+            // returns all rows
+            getAll(key, ...params) {
+                return this.query(key, params);
+            },
+
+            // executes INSERT and returns inserted row
+            insertOne(key, ...params) {
+                return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
+            },
+        }
+
+        // Assign actions to the instance
+        Object.assign(this, action);
     }
 
     // executes query and returns Cypress chain of rows
@@ -36,21 +58,6 @@ class Database {
         const values = Array.isArray(params) ? params : [params];
 
         return cy.task('query', { sql: template, values }, { log: false });
-    }
-
-    // returns first row or null
-    getOne(key, ...params) {
-        return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
-    }
-
-    // returns all rows
-    getAll(key, ...params) {
-        return this.query(key, params);
-    }
-
-    // executes INSERT and returns inserted row
-    insertOne(key, ...params) {
-        return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
     }
 
     // --- SPECIFIC QUERY WRAPPERS ---
