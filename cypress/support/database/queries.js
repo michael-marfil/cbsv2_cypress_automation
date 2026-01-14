@@ -42,6 +42,8 @@ export const sql = {
          */
         // Loan Product Settings
         'lending.loanproductsettings': `SELECT * FROM lending_loanproducts WHERE NAME = ?`,
+        // Loan Product To Use
+        'lending.loanproducttouse': `SELECT * FROM lending_loanproductstouse WHERE branchid = ? AND loanproductid = ?`,
         // Loan Purpose
         'lending.loanpurpose': `SELECT loanpurposeid, name FROM lending_loanpurpose WHERE childcount = 0 ORDER BY RAND() LIMIT 1`,
         // Loan Class
@@ -86,7 +88,7 @@ export const sql = {
         'general.co-borrower': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`,
         // Co Maker
         'general.co-maker': `SELECT clientid FROM general_clients ORDER BY RAND() LIMIT 1`
-    }
+    },
 
     /**
      * UPDATE QUERIES
@@ -95,6 +97,13 @@ export const sql = {
     /**
      * INSERT QUERIES
      */
+    insert: {
+        /**
+         * LENDING
+         */
+        // Loan Product to Use
+        'lending.loanproducttouse': `INSERT INTO lending_loanproductstouse (branchid, loanproductid) VALUES (?, ?)`
+    }
 
     /**
      * DELETE QUERIES
