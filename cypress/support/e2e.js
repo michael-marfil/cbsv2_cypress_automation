@@ -76,3 +76,8 @@ beforeEach(() => {
     // automatically prevent new tabs/windows from opening in all tests.
     cy.avoidWindowOpen();
 });
+
+afterEach(() => {
+    // wait after each it() block
+    cy.wait(2000, { log: false });
+});

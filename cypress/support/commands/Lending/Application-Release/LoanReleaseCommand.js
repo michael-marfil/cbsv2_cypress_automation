@@ -122,7 +122,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                             const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
                             if (AmortTab) {
                                 cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
-                                    cy.wrap(amort).click({ force: true, timeout: 5000 });
+                                    cy.wrap(amort).click({ force: true, timeout: 5000 }).wait(500);
                                 });
                             } else {
                                 cy.log('Skipping: Amortization Tab not found.');
@@ -136,7 +136,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                             const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
                             if (OtherDetailsTab) {
                                 cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
-                                    cy.wrap(other_details).click({ force: true, timeout: 5000 });
+                                    cy.wrap(other_details).click({ force: true, timeout: 5000 }).wait(500);
                                 });
 
                                 handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
@@ -152,7 +152,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                             const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
                             if (Summ) {
                                 cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
-                                    cy.wrap(summary).click({ force: true, timeout: 5000 });
+                                    cy.wrap(summary).click({ force: true, timeout: 5000 }).wait(500);
                                 });
                             } else {
                                 cy.log('Skipping: Summary Tab not found.');
@@ -160,6 +160,21 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                         }
                     });
                 });
+            });
+        }).then(() => {
+            // submit loan application
+            cy.get('body', { timeout: 10000 }).then($body => {
+                const submitBtn = $body.find('.v-btn__content:contains("submit")', { timeout: 5000 });
+
+                if (finalSubmit && submitBtn.length > 0) {
+                    // check if submit button is disable
+                    if (submitBtn.is(':disabled')) cy.log(`submit button is disabled.`);
+
+                    // otherwise, click it
+                    cy.wrap(submitBtn)
+                        .should('be.visible')
+                        .click({ force: true });
+                }
             });
         });
     });
