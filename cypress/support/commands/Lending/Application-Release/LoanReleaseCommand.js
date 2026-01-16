@@ -18,6 +18,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
             other_details: false,
             summary: false
         },
+        finalSubmit = true,
         data = {
             loan_release_details: [],
             amort_details: [],
@@ -164,7 +165,7 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
         }).then(() => {
             // submit loan application
             cy.get('body', { timeout: 10000 }).then($body => {
-                const submitBtn = $body.find('.v-btn__content:contains("submit")', { timeout: 5000 });
+                const submitBtn = $body.find('.v-btn__content:contains("Release Loan")', { timeout: 5000 });
 
                 if (finalSubmit && submitBtn.length > 0) {
                     // check if submit button is disable
