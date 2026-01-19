@@ -104,10 +104,14 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                         account.value !== 0 && account.value !== savingsid
                     );
 
-                    // Select random account
-                    const randomAccount = validAccounts[Math.floor(Math.random() * validAccounts.length)];
-                    // Extract just the account number (e.g., "001-016-5736")
-                    const accountNumber = randomAccount.text.match(/SA# ([\d-]+)/)[1];
+                    let accountNumber = null;
+
+                    if (validAccounts.length > 0) {
+                        // Select random account
+                        const randomAccount = validAccounts[Math.floor(Math.random() * validAccounts.length)];
+                        // Extract just the account number (e.g., "001-016-5736")
+                        accountNumber = randomAccount.text.match(/SA# ([\d-]+)/)[1];
+                    }
 
                     const LoanReleaseDetails = data.loan_release_details?.[0] || null;
                     const AmortDetails = data.amort_details?.[0] || null;
