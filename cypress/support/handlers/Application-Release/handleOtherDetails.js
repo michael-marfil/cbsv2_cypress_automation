@@ -176,34 +176,64 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                             case 'Cash / CC':
                                 field('Cashier`s Check No.', () => {
                                     cy.contains('td', 'Cashier`s Check No.').parent('tr').within(() => {
-                                        cy.log('Cash / CC selected');
+                                        const randomCheckNo = Math.floor(10000 + Math.random() * 90000).toString();
+                                        action.input(undefined, randomCheckNo);
                                     });
                                 });
                                 break;
                             case 'Credit Memo - Linked Account':
                                 field('Credit Memo Ref.', () => {
                                     cy.contains('td', 'Credit Memo Ref.').parent('tr').within(() => {
-                                        cy.log('Linked Account selected');
+                                        cy.log('Linked Account selected. Saving Acct automatically selected.');
                                     });
                                 });
                                 break;
                             case 'Credit Memo - Other Account':
                                 field('Proceeds Account', () => {
                                     cy.contains('td', 'Proceeds Account').parent('tr').within(() => {
-                                        cy.log('proceeds account');
+                                        cy.get('.v-select__selections').click({ force: true });
                                     });
+                                    
+                                    // Wait for dropdown to be visible
+                                    cy.get('.v-menu__content:visible', { timeout: 10000 }).should('be.visible');
+                                    
+                                    // Try to click without scrolling first
+                                    cy.get('.v-menu__content:visible')
+                                        .find('.v-list-item')
+                                        .contains(OtherDetails.proceedsAcct)
+                                        .then($el => {
+                                            // Check if element is visible in viewport
+                                            const isVisible = Cypress.dom.isVisible($el[0]);
+                                            
+                                            if (!isVisible) {
+                                                // Only scroll if not visible
+                                                cy.log('Element not fully visible, scrolling...');
+                                                cy.wrap($el)
+                                                    .scrollIntoView({ offset: { top: -50, left: 0 }, easing: 'linear', duration: 500 })
+                                                    .should('be.visible')
+                                                    .click();
+                                            } else {
+                                                // Click normally if already visible
+                                                cy.wrap($el)
+                                                    .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                    .click();
+                                            }
+                                        });
+                                    
+                                    cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
                                 });
 
                                 field('Credit Memo Ref.', () => {
                                     cy.contains('td', 'Credit Memo Ref.').parent('tr').within(() => {
-                                        cy.log('credit memo ref')
+                                        cy.log('Other Account selected. Savings Acct automatically selected.');
                                     });
                                 });
                                 break;
                             case 'Check/COCI':
                                 field('Check No.', () => {
                                     cy.contains('td', 'Check No.').parent('tr').within(() => {
-                                        cy.log('Check selected');
+                                        const randomCheckNo = Math.floor(10000 + Math.random() * 90000).toString();
+                                        action.input(undefined, randomCheckNo);
                                     });
                                 });
                                 break;

@@ -94,13 +94,31 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                 });
             });
         }).then(() => {
-            const LoanReleaseDetails = data.loan_release_details?.[0] || null;
-            const AmortDetails = data.amort_details?.[0] || null;
-            const GeneralDetails = data.general?.[0] || null;
-            const OtherDetails = data.other_details?.[0] || null;
-
             cy.get('body').then($body => {
-                cy.wait('@loan-release-details', { timeout: 20000 }).then(() => {
+                cy.wait('@loan-release-details', { timeout: 20000 }).then((interception) => {
+                    const savingsid = interception.response.body.loan_details.savingsid;
+                    const proceedsAcct = interception.response.body.options.proceedsAccountOptions;
+
+                    // Filter out empty value AND the already selected savingsid
+                    const validAccounts = proceedsAcct.filter(account => 
+                        account.value !== 0 && account.value !== savingsid
+                    );
+
+                    // Select random account
+                    const randomAccount = validAccounts[Math.floor(Math.random() * validAccounts.length)];
+                    // Extract just the account number (e.g., "001-016-5736")
+                    const accountNumber = randomAccount.text.match(/SA# ([\d-]+)/)[1];
+
+                    const LoanReleaseDetails = data.loan_release_details?.[0] || null;
+                    const AmortDetails = data.amort_details?.[0] || null;
+                    const GeneralDetails = data.general?.[0] || null;
+                    const OtherDetails = {
+                        ...(data.other_details?.[0] || null),
+                        clientid: clientid,
+                        savingsid: savingsid,
+                        proceedsAcct: accountNumber
+                    };
+                    
                     // ----------------------------------------
                     // AMORT OPTIONS
                     // ----------------------------------------
