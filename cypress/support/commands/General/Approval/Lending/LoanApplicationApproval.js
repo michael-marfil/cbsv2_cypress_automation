@@ -28,8 +28,41 @@ Cypress.Commands.add('approveLoanApplication', (clientid, productcode) => {
         const clientname = latestToApprove.clientname.trim();
         const loanproduct = latestToApprove.loanproductname;
         const isDisabled = latestToApprove.approval.disabled_checkbox;
+        const approvalFilter = latestToApprove.pn_approval_level;
 
+        cy.log(`Target Approval Filter Level: ${approvalFilter}`);
         cy.log(`Targeting: ${clientname} | ${loanproduct} | ${pnid}`);
+
+        // Set the approval filter slider to the correct level
+        cy.get('.transaction-card.v-card:visible', { timeout: 5000 }).then(() => {
+            cy.get('.v-slider').then(() => {
+                cy.get('div[role="slider"]', { timeout: 5000 }).then($slider => {
+                    const currentValue = parseInt($slider.attr('aria-valuenow'));
+                    const targetValue  = parseInt(approvalFilter);
+
+                    if (currentValue !== targetValue) {
+                        cy.log(`adjusting slider from ${currentValue} to ${targetValue}`);
+
+                        const difference = currentValue - targetValue;
+                        cy.get('.v-slider__thumb.primary', { timeout: 5000 }).click({ force: true });
+                        
+                        // determine which arrow key to press
+                        // ArrowDown decrease the value, ArrowUp increases it (just to be sure)
+                        const key = difference > 0 ? 'ArrowDown' : 'ArrowUp';
+                        const steps = Math.abs(difference);
+
+                        // press the arrow key the required number of times
+                        for (let i = 0; i < steps; i ++ ) {
+                            cy.realPress(key, { log: false });
+                        }
+
+                        cy.wait(1000);
+                    } else {
+                        cy.log(`Already at correct level ${targetValue}`);
+                    }
+                });
+            });
+        });
 
         cy.get('table tbody tr')
             .filter(`:contains("${clientname}")`)
