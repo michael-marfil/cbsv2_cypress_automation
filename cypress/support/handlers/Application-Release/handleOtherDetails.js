@@ -177,7 +177,7 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                                 field('Cashier`s Check No.', () => {
                                     cy.contains('td', 'Cashier`s Check No.').parent('tr').within(() => {
                                         const randomCheckNo = Math.floor(10000 + Math.random() * 90000).toString();
-                                        action.input(undefined, randomCheckNo);
+                                        action.input(undefined, randomCheckNo, false);
                                     });
                                 });
                                 break;
@@ -233,7 +233,7 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                                 field('Check No.', () => {
                                     cy.contains('td', 'Check No.').parent('tr').within(() => {
                                         const randomCheckNo = Math.floor(10000 + Math.random() * 90000).toString();
-                                        action.input(undefined, randomCheckNo);
+                                        action.input(undefined, randomCheckNo, false);
                                     });
                                 });
                                 break;

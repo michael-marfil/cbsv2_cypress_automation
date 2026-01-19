@@ -16,7 +16,7 @@ export const action = {
      * @param {string|number} value - Text value to input into the field
      * 
      */
-    input: (selector = 'input[type="text"]', value) => {
+    input: (selector = 'input[type="text"]', value, clearInput = true) => {
         if (value !== undefined && value !== null) {
             cy.get(selector, { timeout: 10000 })
                 .should('be.visible')
@@ -27,18 +27,23 @@ export const action = {
                         return;
                     }
 
-                    // skip if value is already the same
-                    const currentValue = $el.val();
-                    if (currentValue === String(value)) {
-                        cy.log(`skipping: value already set to ${value}`);
-                        return
+                    // skip if value is already the same (only check when clearing)
+                    if (clearInput) {
+                        const currentValue = $el.val();
+                        if (currentValue === String(value)) {
+                            cy.log(`skipping: value already set to ${value}`);
+                            return
+                        }
                     }
 
-                    // otherwise, proceed
-                    cy.wrap($el)
-                        .click({ force: true })
-                        .type('{selectall}', { delay: 50 })
-                        .type(value, { delay: 100 });
+                    // click input field
+                    cy.wrap($el).click({ force: true });
+
+                    // clear input if needed
+                    if (clearInput) cy.wrap($el).type('{selectall}', { delay: 50 });
+
+                    // type value
+                    cy.wrap($el).type(value, { delay: 100 });
                 });
         }
     },
