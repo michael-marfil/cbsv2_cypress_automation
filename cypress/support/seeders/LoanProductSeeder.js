@@ -80,8 +80,8 @@ Cypress.Commands.add('seedLoanProduct', (overrides = {}) => {
                     penaltyglcode: glCodes.penaltyglcode,
                     approval_data: {
                         amount: {
-                            "0": { "1": null, "2": null, "3": null, "4": null, "5": null, "6": null, "7": null, "8": null, "9": null, "10": null },
-                            "1": { "1": null, "2": null, "3": null, "4": null, "5": null, "6": null, "7": null, "8": null, "9": null, "10": null }
+                            "0": { "1": 100, "2": 300, "3": 500, "4": 700, "5": 900, "6": null, "7": null, "8": null, "9": null, "10": null },
+                            "1": { "1": 200, "2": 400, "3": 600, "4": 800, "5": 1000, "6": null, "7": null, "8": null, "9": null, "10": null }
                         },
                         approver: {
                             "0": { "1": "1", "2": "1", "3": "1", "4": "1", "5": "1", "6": "1", "7": "1", "8": "1", "9": "1", "10": "1" },

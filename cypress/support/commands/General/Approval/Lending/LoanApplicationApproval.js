@@ -58,7 +58,7 @@ Cypress.Commands.add('approveLoanApplication', (clientid, productcode) => {
 
                         cy.wait(1000);
                     } else {
-                        cy.log(`Already at correct level ${targetValue}`);
+                        cy.log(`Already at correct level: Level ${targetValue}`);
                     }
                 });
             });
