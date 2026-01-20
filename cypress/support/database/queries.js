@@ -105,9 +105,16 @@ export const sql = {
          */
         // Loan Product to Use
         'lending.loanproducttouse': `INSERT INTO lending_loanproductstouse (branchid, loanproductid) VALUES (?, ?)`
-    }
+    },
 
     /**
      * DELETE QUERIES
      */
+    delete: {
+        /**
+         * LENDING
+         */
+        // Loan Product to Use
+        'lending.loanproducttouse': `DELETE FROM lending_loanproductstouse WHERE branchid = ?`
+    }
 }
