@@ -39,6 +39,16 @@ class Database {
             insertOne(key, ...params) {
                 return this.query(key, params).then(rows => (rows.length ? rows[0] : null));
             },
+
+            // executes INSERT multiple rows
+            insertAll(key, ...params) {
+                return this.query(key, params);
+            },
+
+            // executes DELETE and returns affected rows count or result
+            deleteAll(key, ...params) {
+                return this.query(key, params);
+            }
         }
 
         // Assign actions to the instance
@@ -119,6 +129,10 @@ class Database {
      * @returns laon product to use for given userbranch and loanproductid (or null if none)
      */
     loan_product_to_use(userbranch, loanproductid) {
+        if (loanproductid === null || loanproductid === undefined) {
+            return cy.task('query', `SELECT * FROM lending_loanproductstouse WHERE branchid = ${userbranch}`, { log: false })
+                .then(rows => rows && rows.length > 0 ? rows : null);
+        }
         return this.getOne('select.lending.loanproducttouse', userbranch, loanproductid).then(row => row ?? null);
     }
 
@@ -128,7 +142,7 @@ class Database {
      */
     loan_purpose(loanpurposeid = null) {
         if (loanpurposeid) {
-            return cy.task('query', `SELECT name FROM lending_loanpurpose WHERE loanpurposeid = ${loanpurposeid}`)
+            return cy.task('query', `SELECT name FROM lending_loanpurpose WHERE loanpurposeid = ${loanpurposeid}`, { log: false })
                 .then(rows => rows && rows.length > 0 ? rows[0] : null);
         }
         return this.getOne('select.lending.loanpurpose').then(row => row ?? null);
@@ -154,7 +168,7 @@ class Database {
      */
     client_group(clientgroupid = null) {
         if (clientgroupid) {
-            return cy.task('query', `SELECT name FROM lending_clientgroup WHERE clientgroupid = ${clientgroupid}`)
+            return cy.task('query', `SELECT name FROM lending_clientgroup WHERE clientgroupid = ${clientgroupid}`, { log: false })
                 .then(rows => rows && rows.length > 0 ? rows[0] : null);
         }
         return this.getOne('select.lending.clientgroup').then(row => row ?? null);
@@ -203,10 +217,21 @@ class Database {
      * @insert loan product to loan product to use
      */
     insert_loan_product_to_use(userbranch, loanproductid) {
+        // if loanproductid is an array, insert multiple rows
+        if (Array.isArray(loanproductid)) {
+            return this.insertAll('insert.lending.loanproducttouse', userbranch, loanproductid);
+        }
+        // otherwise, insert single row
         return this.insertOne('insert.lending.loanproducttouse', userbranch, loanproductid);
     }
 
     // ------ DELETE OPERATIONS ------
+    /**
+     * @delete loan product to use
+     */
+    delete_loan_product_to_use(userbranch) {
+        return this.deleteAll('delete.lending.loanproducttouse', userbranch);
+    }
 }
 
 export const db = new Database();
