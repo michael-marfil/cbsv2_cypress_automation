@@ -1,4 +1,5 @@
 import { sql } from '@database/queries';
+import GetHelper from '@support/helpers/GetHelper';
 
 /**
  * Database Utility for Cypress Tests
@@ -122,6 +123,10 @@ class Database {
      * @returns loan product settings for given loan product name (or null if none)
      */
     loan_product(loanproductname) {
+        if (loanproductname === null || loanproductname === undefined) {
+            return cy.task('query', `SELECT loanproductid, name, shortname FROM lending_loanproducts ORDER BY RAND() LIMIT 1`, { log: false })
+                .then(rows => rows && rows.length > 0 ? rows[0] : null);
+        }
         return this.getOne('select.lending.loanproductsettings', loanproductname).then(row => row ?? null);
     }
 
@@ -185,6 +190,18 @@ class Database {
      * @returns list of clients matching given names (or null if none)
      */
     clients(firstname, middlename, lastname) {
+        if ((firstname === null || firstname === undefined) && 
+            (middlename === null || middlename === undefined) && 
+            (lastname === null || lastname === undefined)) {
+
+            return GetHelper.userbranch().then(userbranch => {
+                return cy.task('query', {
+                    sql: 'SELECT clientid FROM general_clients WHERE branchid != ? ORDER BY RAND() LIMIT 1',
+                    values: [userbranch]
+                }, { log: false });
+            }).then(rows => rows && rows.length > 0 ? rows[0] : null);
+        }
+        
         return this.getOne('select.general.clients', firstname, middlename, lastname).then(row => row ?? null);
     }
 
