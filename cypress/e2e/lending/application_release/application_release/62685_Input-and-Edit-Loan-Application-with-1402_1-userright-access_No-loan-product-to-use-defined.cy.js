@@ -25,12 +25,13 @@ describe('Input and Edit Loan Application with 1402 [1] userright access (No Loa
         // set user right permission.
         cy.permissions({
             userPermissions: [
-            { permissionID: '1401', level: 1, hasAccess: true },
-            { permissionID: '1401', level: 2, hasAccess: false },
-            { permissionID: '1401', level: 3, hasAccess: false },
-            { permissionID: '1402', level: 1, hasAccess: true },
-            { permissionID: '1402', level: 2, hasAccess: false },
-            { permissionID: '1402', level: 3, hasAccess: false },
+                { permissionID: '1401', level: 1, hasAccess: true },
+                { permissionID: '1401', level: 2, hasAccess: false },
+                { permissionID: '1401', level: 3, hasAccess: false },
+                
+                { permissionID: '1402', level: 1, hasAccess: true },
+                { permissionID: '1402', level: 2, hasAccess: false },
+                { permissionID: '1402', level: 3, hasAccess: false },
             ],
         });
     });
