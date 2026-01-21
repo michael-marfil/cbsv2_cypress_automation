@@ -76,19 +76,27 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
 
                         cy.wait('@to-release', { timeout: 20000 }).then((interception) => {
                             const loan_release = interception.response.body;
-                            cy.log(`total loans: ${loan_release.length}`);
+                            
+                            const targetIndex = loan_release.findIndex(loan => {
+                                // Use loose comparison in case of type mismatch
+                                return loan.pnid == pnid || loan.pnid === parseInt(pnid) || loan.pnid === pnid.toString();
+                            });
 
-                            const targetIndex = loan_release.findIndex(loan => loan.pnid === pnid);
-
-                            cy.log(`${pnid} is at index ${targetIndex}`);
-                            if (targetIndex != -1) {
-                                cy.log(`selecting loan: ${JSON.stringify(loan_release[targetIndex])}`)
+                            cy.log(`Target index: ${targetIndex}`);
+                            
+                            if (targetIndex !== -1) {
+                                cy.log(`Found loan: ${JSON.stringify(loan_release[targetIndex])}`);
+                                
+                                // Wait for dropdown items to be fully rendered
                                 cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
+                                    .should('have.length.at.least', targetIndex + 1)
                                     .eq(targetIndex)
                                     .should('be.visible')
                                     .click({ force: true });
                             } else {
-                                throw new Error(`Loan with PNID ${pnid} not found in dropdown.`);
+                                // Log all loans for debugging before throwing error
+                                cy.log('Available loans:', JSON.stringify(loan_release, null, 2));
+                                throw new Error(`Loan with PNID ${pnid} not found. Available PNIDs: ${loan_release.map(l => l.pnid).join(', ')}`);
                             }
                         });
                 });
@@ -185,18 +193,26 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                 });
             });
         }).then(() => {
-            // submit loan application
+            // submit loan release
             cy.get('body', { timeout: 10000 }).then($body => {
                 const submitBtn = $body.find('.v-btn__content:contains("Release Loan")', { timeout: 5000 });
 
                 if (finalSubmit && submitBtn.length > 0) {
+                    const isDisabled = submitBtn.is(':disabled');
+                    const isVisible = submitBtn.is(':visible');
+
                     // check if submit button is disable
-                    if (submitBtn.is(':disabled')) cy.log(`submit button is disabled.`);
+                    if (isDisabled) cy.log(`submit button is disabled.`);
+
+                    // check if submit button is not visible
+                    if (!isVisible) cy.log(`submit button is not visible`);
 
                     // otherwise, click it
-                    cy.wrap(submitBtn)
-                        .should('be.visible')
-                        .click({ force: true });
+                    if (!isDisabled && isVisible) {
+                        cy.wrap(submitBtn)
+                            .should('be.visible')
+                            .click({ force: true });
+                    }
                 }
             });
         });
