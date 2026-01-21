@@ -128,78 +128,85 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} } = {}) =>
                         .contains('Client Name')
                         .parents('tr')
                         .find('input[type="text"]', { timeout: 5000 })
-                        .type(clientid, { delay: 100, timeout: 5000 })
+                        .type(clientid, { delay: 50, timeout: 5000 })
                         .then(() => {
-                            cy.get('.v-menu__content .v-list :visible', { timeout: 5000 }).contains(clientid).click({ force: true });
+                            cy.get('.v-menu__content .v-list :visible', { timeout: 10000 }).contains(clientid).click({ force: true });
                         });
                 });
             });
         }).then(() => {
-            const LoanAppDetails = data.loan_app_details?.[0] || null;
-            const AmortDetails = data.amort_details?.[0] || null;
-            const GeneralDetails = data.general?.[0] || null;
-            const OtherDetails = data.other_details?.[0] || null;
-            
-            cy.get('body').then($body => {
-                cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
-                    // ----------------------------------------
-                    // AMORT OPTIONS
-                    // ----------------------------------------
-                    if (LoanAppDetails || AmortDetails) {
-                        handleAmortOptions(LoanAppDetails, AmortDetails);
-                    }
+            cy.url({ timeout: 10000 }).then((url) => {
+                if (!url.includes('/lending/loan-release/individual/apply1')) {
+                    cy.log('Stopping: Still on Application/Release page');
+                    return
+                }
 
-                    cy.get('.relative:visible', { timeout: 20000 }).then(() => {
+                const LoanAppDetails = data.loan_app_details?.[0] || null;
+                const AmortDetails = data.amort_details?.[0] || null;
+                const GeneralDetails = data.general?.[0] || null;
+                const OtherDetails = data.other_details?.[0] || null;
+                
+                cy.get('body').then($body => {
+                    cy.wait('@loan-app-details', { timeout: 20000 }).then(() => {
                         // ----------------------------------------
-                        // GENERAL TAB
+                        // AMORT OPTIONS
                         // ----------------------------------------
-                        if (visitGeneralTab && GeneralDetails) {
-                            handleGeneralTab(GeneralDetails, triggerSubmit.general);
+                        if (LoanAppDetails || AmortDetails) {
+                            handleAmortOptions(LoanAppDetails, AmortDetails);
                         }
 
-                        // ----------------------------------------
-                        // AMORTIZATION TAB
-                        // ----------------------------------------
-                        if (visitAmortizationTab) {
-                            const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
-                            if (AmortTab) {
-                                cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
-                                    cy.wrap(amort).click({ force: true, timeout: 5000 }).wait(500);
-                                });
-                            } else {
-                                cy.log('Skipping: Amortization Tab not found.');
+                        cy.get('.relative:visible', { timeout: 20000 }).then(() => {
+                            // ----------------------------------------
+                            // GENERAL TAB
+                            // ----------------------------------------
+                            if (visitGeneralTab && GeneralDetails) {
+                                handleGeneralTab(GeneralDetails, triggerSubmit.general);
                             }
-                        }
 
-                        // ----------------------------------------
-                        // OTHER DETAILS TAB
-                        // ----------------------------------------
-                        if (visitOtherDetailsTab && OtherDetails) {
-                            const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
-                            if (OtherDetailsTab) {
-                                cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
-                                    cy.wrap(other_details).click({ force: true, timeout: 5000 }).wait(500);
-                                });
-
-                                handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
-                            } else {
-                                cy.log('Skipping: Other Details Tab not found.');
+                            // ----------------------------------------
+                            // AMORTIZATION TAB
+                            // ----------------------------------------
+                            if (visitAmortizationTab) {
+                                const AmortTab = $body.find('.v-tab:contains("Amortization")').length > 0;
+                                if (AmortTab) {
+                                    cy.get('.v-tab.amortization:visible', { timeout: 5000 }).then((amort) => {
+                                        cy.wrap(amort).click({ force: true, timeout: 5000 }).wait(500);
+                                    });
+                                } else {
+                                    cy.log('Skipping: Amortization Tab not found.');
+                                }
                             }
-                        }
 
-                        // ----------------------------------------
-                        // SUMMARY TAB
-                        // ----------------------------------------
-                        if (visitSummaryTab) {
-                            const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
-                            if (Summ) {
-                                cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
-                                    cy.wrap(summary).click({ force: true, timeout: 5000 }).wait(500);
-                                });
-                            } else {
-                                cy.log('Skipping: Summary Tab not found.');
+                            // ----------------------------------------
+                            // OTHER DETAILS TAB
+                            // ----------------------------------------
+                            if (visitOtherDetailsTab && OtherDetails) {
+                                const OtherDetailsTab = $body.find('.v-tab:contains("Other Details")').length > 0;
+                                if (OtherDetailsTab) {
+                                    cy.get('.v-tab.other-details:visible', { timeout: 5000 }).then((other_details) => {
+                                        cy.wrap(other_details).click({ force: true, timeout: 5000 }).wait(500);
+                                    });
+
+                                    handleOtherDetailsTab(OtherDetails, triggerSubmit.other_details);
+                                } else {
+                                    cy.log('Skipping: Other Details Tab not found.');
+                                }
                             }
-                        }
+
+                            // ----------------------------------------
+                            // SUMMARY TAB
+                            // ----------------------------------------
+                            if (visitSummaryTab) {
+                                const Summ = $body.find('.v-tab:contains("Summary")').length > 0;
+                                if (Summ) {
+                                    cy.get('.v-tab.summary:visible', { timeout: 5000 }).then((summary) => {
+                                        cy.wrap(summary).click({ force: true, timeout: 5000 }).wait(500);
+                                    });
+                                } else {
+                                    cy.log('Skipping: Summary Tab not found.');
+                                }
+                            }
+                        });
                     });
                 });
             });
