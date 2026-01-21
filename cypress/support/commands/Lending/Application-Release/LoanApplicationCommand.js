@@ -216,13 +216,21 @@ Cypress.Commands.add('loanApplication', ({ loan_application_data = {} } = {}) =>
                 const submitBtn = $body.find('.v-btn__content:contains("submit")', { timeout: 5000 });
 
                 if (finalSubmit && submitBtn.length > 0) {
+                    const isDisabled = submitBtn.is(':disabled');
+                    const isVisible = submitBtn.is(':visible');
+                    
                     // check if submit button is disable
                     if (submitBtn.is(':disabled')) cy.log(`submit button is disabled.`);
 
+                    // check if submit button is not visible
+                    if (!isVisible) cy.log(`submit button is not visible`);
+
                     // otherwise, click it
-                    cy.wrap(submitBtn)
-                        .should('be.visible')
-                        .click({ force: true });
+                    if (!isDisabled && isVisible) {
+                        cy.wrap(submitBtn)
+                            .should('be.visible')
+                            .click({ force: true });
+                    }
                 }
             });
         });
