@@ -109,7 +109,7 @@ describe('Release New - Default product settings ( all fixed ) - Daily ( 360 day
             }
         }).then(() => {
             const userbranch = data.userbranch;
-            const loanproductid = data.loanproductid;
+            const loanproductid = data.loanProductId;
             db.loan_product_to_use(userbranch, loanproductid).then(loanproducttouse => {
                 if (loanproducttouse) {
                     cy.log('Skipping: Loan Product already in use.');
