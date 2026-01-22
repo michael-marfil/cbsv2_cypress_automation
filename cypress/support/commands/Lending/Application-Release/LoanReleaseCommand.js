@@ -69,36 +69,58 @@ Cypress.Commands.add('loanRelease', ({ loan_release_data = {} } = {}) => {
                         .as('LoanApplicationRow');
 
                     // Client Name
-                    cy.get('@LoanApplicationRow').next('tr').contains('Client Name')
-                        .parents('tr')
-                        .find('input[type="text"]')
-                        .type(clientid.toString(), { delay: 100 });
-
-                        cy.wait('@to-release', { timeout: 20000 }).then((interception) => {
-                            const loan_release = interception.response.body;
+                    const findLoan = (maxRetries = 10) => {
+                        let attempt = 0;
+                        
+                        const searchLoan = () => {
+                            attempt++;
+                            cy.log(`search attempt ${attempt}/${maxRetries} for PNID: ${pnid}`);
                             
-                            const targetIndex = loan_release.findIndex(loan => {
-                                // Use loose comparison in case of type mismatch
-                                return loan.pnid == pnid || loan.pnid === parseInt(pnid) || loan.pnid === pnid.toString();
-                            });
+                            cy.get('@LoanApplicationRow').next('tr').contains('Client Name')
+                                .parents('tr')
+                                .find('input[type="text"]')
+                                .clear()
+                                .type(clientid.toString(), { delay: 100 });
 
-                            cy.log(`Target index: ${targetIndex}`);
-                            
-                            if (targetIndex !== -1) {
-                                cy.log(`Found loan: ${JSON.stringify(loan_release[targetIndex])}`);
+                            return cy.wait('@to-release', { timeout: 20000 }).then((interception) => {
+                                const loan_release = interception.response.body;
+
+                                cy.log(`total results: ${loan_release.length}`);
+                                cy.log(`available PNIDs: ${loan_release.map(l => l.pnid).join(', ')}`);
                                 
-                                // Wait for dropdown items to be fully rendered
-                                cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
-                                    .should('have.length.at.least', targetIndex + 1)
-                                    .eq(targetIndex)
-                                    .should('be.visible')
-                                    .click({ force: true });
-                            } else {
-                                // Log all loans for debugging before throwing error
-                                cy.log('Available loans:', JSON.stringify(loan_release, null, 2));
-                                throw new Error(`Loan with PNID ${pnid} not found. Available PNIDs: ${loan_release.map(l => l.pnid).join(', ')}`);
-                            }
-                        });
+                                const targetIndex = loan_release.findIndex(loan => {
+                                    return loan.pnid == pnid || loan.pnid === parseInt(pnid) || loan.pnid === pnid.toString();
+                                });
+
+                                if (targetIndex !== -1) {
+                                    cy.log(`found loan at index ${targetIndex}`);
+                                    
+                                    return cy.get('.v-menu__content .v-list-item:visible', { timeout: 5000 })
+                                        .should('have.length.at.least', targetIndex + 1)
+                                        .eq(targetIndex)
+                                        .should('be.visible')
+                                        .click({ force: true });
+                                        
+                                } else if (attempt < maxRetries) {
+                                    cy.log(`not found, retrying in 1.5s...`);
+                                    cy.wait(1500);
+                                    return searchLoan();
+                                    
+                                } else {
+                                    cy.log('available loans:', JSON.stringify(loan_release, null, 2));
+                                    throw new Error(
+                                        `loan with PNID ${pnid} not found after ${maxRetries} attempts. ` +
+                                        `available PNIDs: ${loan_release.map(l => l.pnid).join(', ')}`
+                                    );
+                                }
+                            });
+                        };
+                        
+                        return searchLoan();
+                    };
+
+                    // Execute the retry search
+                    return findLoan(10);
                 });
             });
         }).then(() => {
