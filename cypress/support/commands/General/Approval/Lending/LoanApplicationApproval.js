@@ -98,14 +98,11 @@ Cypress.Commands.add('approveLoanApplication', (clientid, productcode) => {
                 .should('be.enabled')
                 .click({ force: true });
 
-            cy.wait('@Approved', { timeout: 10000 })
-                .its('response.statusCode')
-                .should('be.oneOf', [200, 201]);
+            return cy.wait('@Approved', { timeout: 10000 }).then((approval_response) => {
+                expect(approval_response.response.statusCode).to.be.oneOf([200, 201]);
 
-            cy.log(`approved loan application for client ${clientname}`);
-
-            // return pnid to be used in Loan Release
-            cy.wrap({ pnid });
+                return { pnid };
+            });
         }
     });
 });
