@@ -2,7 +2,7 @@ import { db } from '@database';
 import GetHelper from '@support/helpers/GetHelper';
 import FormatHelper from '@support/helpers/FormatHelper';
 
-describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)', () => {
+describe('Release New - (Bi-Monthly) All fixed but no deduction (365 days in a year)', () => {
     let data = {};
 
     before(() => {
@@ -14,11 +14,11 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
         db.loan_security().then(loanSecurity => { data.loanSecurity = loanSecurity.name });
         db.client_group().then(clientGroup => { data.clientGroup = clientGroup.clientgroupid });
         db.loan_purpose().then(loanpurpose => { data.loanpurposeid = loanpurpose.loanpurposeid });
-        db.clients('FNAME_CL_LRA_006', 'MNAME_CL_LRA_006', 'LNAME_CL_LRA_006').then(clients => { clients ? (
+        db.clients('FNAME_CL_LRA_007', 'MNAME_CL_LRA_007', 'LNAME_CL_LRA_007').then(clients => { clients ? (
             data.clientId = clients.clientid,
             data.clientFallback = false
         ) : data.clientFallback = true });
-        db.loan_product('LP_LRA_006').then(loan_product => { loan_product ? (
+        db.loan_product('LP_LRA_007').then(loan_product => { loan_product ? (
             data.loanProductId = loan_product.loanproductid,
             data.loanProductName = loan_product.name,
             data.loanProductCode = loan_product.shortname,
@@ -59,11 +59,11 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
             if (isFallback) {
                 cy.log('Create New Client.');
                 cy.seedClient({
-                    lastName: 'LNAME_CL_LRA_006',
-                    firstName: 'FNAME_CL_LRA_006',
-                    middleName: 'MNAME_CL_LRA_006'
+                    lastName: 'LNAME_CL_LRA_007',
+                    firstName: 'FNAME_CL_LRA_007',
+                    middleName: 'MNAME_CL_LRA_007'
                 }).then(() => {
-                    db.clients('FNAME_CL_LRA_006', 'MNAME_CL_LRA_006', 'LNAME_CL_LRA_006').then(clients => clients
+                    db.clients('FNAME_CL_LRA_007', 'MNAME_CL_LRA_007', 'LNAME_CL_LRA_007').then(clients => clients
                         ? (data.clientId) : (() => { throw new Error('Client not found after creation.'); })()
                     );
                 });
@@ -79,12 +79,11 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
                 cy.log('Create Loan Product.');
                 cy.seedLoanProduct({
                     general: {
-                        productname: 'LP_LRA_006',
-                        productcode: 'LP006',
-                        description: 'description for loan product test case 6',
-                        termunit: '2',
-                        termdefault: '25',
-                        termmaximum: '60',
+                        productname: 'LP_LRA_007',
+                        productcode: 'LP007',
+                        description: 'description for loan product test case 7',
+                        termunit: '3',
+                        termdefault: '10',
                         borrowertypedefault: 40,
                         requiresecurity: '1',
                         requirecoborrower: true
@@ -97,7 +96,7 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
                         amortDays: { includeDays: { Sat: 1 } },
                     }
                 }).then(() => {
-                    db.loan_product('LP_LRA_006').then(loan_product => {
+                    db.loan_product('LP_LRA_007').then(loan_product => {
                         data.loanProductId = loan_product.loanproductid;
                         data.loanProductName = loan_product.name;
                         data.loanProductCode = loan_product.shortname;
@@ -146,7 +145,7 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
                                     clientGroup: data.clientGroup,
                                     loanPurposeTxt: 'This is a sample purpose text',
                                     loanPurpose: data.loanpurposeid,
-                                    salesLeadGen: 'Walk In'
+                                    salesLeadGen: 'Walk In'  
                                 }]
                             }
                         }
@@ -157,7 +156,7 @@ describe('Release New - (Weekly) All fixed but no deduction (365 days in a year)
         });
     });
 
-    it('Should approve Loan Application', () => {
+    it('Should appove Loan Application', () => {
         cy.get('@clientid').then(clientid => {
             cy.get('@loanproductcode').then(productcode => {
                 cy.approveLoanApplication(clientid, productcode).then((approval_data) => {
