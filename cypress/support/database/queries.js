@@ -75,7 +75,8 @@ export const sql = {
          */
         // Product Settings
         'casa.productsettings': `SELECT productid, productname FROM savings_products WHERE productname = ? ORDER BY productid DESC LIMIT 1`,
-
+        'casa.producttouse': `SELECT * FROM savings_productstouse WHERE branchid = ? AND productid = ?`,
+        'casa.checksavingsaccount': `SELECT COUNT(*) AS total, savingsid, accountname, productid FROM savings_accounts WHERE productid = ? AND accountname = ?`,
         /**
          * GENERAL
          */
@@ -104,7 +105,13 @@ export const sql = {
          * LENDING
          */
         // Loan Product to Use
-        'lending.loanproducttouse': `INSERT INTO lending_loanproductstouse (branchid, loanproductid) VALUES (?, ?)`
+        'lending.loanproducttouse': `INSERT INTO lending_loanproductstouse (branchid, loanproductid) VALUES (?, ?)`,
+
+        /**
+         * CASA
+         */
+        // Product Settings
+        'casa.producttouse': `INSERT INTO savings_productstouse (branchid, productid) VALUES (?, ?)`,
     },
 
     /**

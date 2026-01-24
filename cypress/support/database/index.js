@@ -182,8 +182,26 @@ class Database {
     /**
      * @returns product settings for given product name (or null if none)
      */
-    savings_product(productname) {
+    savings_product(productname, productid) {
+        if (productname === null && productid) {
+            return cy.task('query', `SELECT * FROM savings_products WHERE productid = ${productid}`, { log: false })
+                .then(rows => rows && rows.length > 0 ? rows[0] : null);
+        }
         return this.getOne('select.casa.productsettings', productname).then(row => row ?? null);
+    }
+
+    /**
+     * @returns savings product to use for given userbranch and productid (or null if none)
+     */
+    savings_product_to_use(userbranch, savingsproductid) {
+        return this.getOne('select.casa.producttouse', userbranch, savingsproductid).then(row => row ?? null);
+    }
+
+    /**
+     * @returns total count of savings accounts for given productid and accountname
+     */
+    check_savings_account(productid, accountname) {
+        return this.getOne('select.casa.checksavingsaccount', productid, accountname).then(row => row ?? null);
     }
 
     /**
@@ -240,6 +258,18 @@ class Database {
         }
         // otherwise, insert single row
         return this.insertOne('insert.lending.loanproducttouse', userbranch, loanproductid);
+    }
+
+    /**
+     * @insert savings product to savings product to use
+     */
+    insert_savings_product_to_use(userbranch, savingsproductid) {
+        // if savingsproductid is an array, insert multiple rows
+        if (Array.isArray(savingsproductid)) {
+            return this.insertAll('insert.casa.producttouse', userbranch, savingsproductid);
+        }
+        // otherwise, insert single row
+        return this.insertOne('insert.casa.producttouse', userbranch, savingsproductid);
     }
 
     // ------ DELETE OPERATIONS ------
