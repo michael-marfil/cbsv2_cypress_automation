@@ -49,5 +49,15 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
             }
         });
 
+        cy.get('@deductions').then(() => {
+            //Service Charge
+            if (GeneralDetails.deductions.serviceCharge) {
+                field('Service Charge', () => {
+                    cy.contains('td', 'Service Charge').parent('tr').within(() => {
+                        action.input('input.currency-field', GeneralDetails.deductions.serviceCharge);
+                    });
+                });
+            }
+        });
     });
 }
