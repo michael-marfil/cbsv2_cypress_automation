@@ -71,10 +71,13 @@ export const action = {
                     const currentText = $el.text().trim();
                     const targetValue = typeof value === 'string' ? value : null;
 
-                    // skip if the same value is already selected
-                    if (targetValue && currentText === targetValue) {
-                        cy.log(`skipping: value ${targetValue} already selected`);
-                        return;
+                    // skip if the same value is already selected (partial match)
+                    if (targetValue) {
+                        const partialTarget = targetValue.substring(0, 50);
+                        if (currentText.includes(partialTarget)) {
+                            cy.log(`skipping: value containing "${partialTarget}" already selected`);
+                            return;
+                        }
                     }
 
                     // otherwise, proceed
@@ -91,8 +94,10 @@ export const action = {
                                         .scrollIntoView({ easing: 'linear', duration: 500 })
                                         .click({ force: true });
                                 } else if (typeof value === 'string') {
+                                    // Use partial match - first 50 characters or less
+                                    const partialSearch = value.substring(0, 50);
                                     cy.get('.v-list-item:visible')
-                                        .filter((i, el) => el.innerText.trim() === value)
+                                        .contains(partialSearch)
                                         .scrollIntoView({ easing: 'linear', duration: 500 })
                                         .click({ force: true });
                                 } else {
