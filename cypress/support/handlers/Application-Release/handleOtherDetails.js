@@ -52,7 +52,6 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
 
                     field(`${productcode} Savings Acct`, () => {
                         cy.contains('td', `${productcode} Savings Acct`).parent('tr').within(() => {
-                            cy.log(`savings account: ${savingsid}`);
                             action.select(undefined, savingsid);
                         });
                     });
