@@ -46,6 +46,18 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                     });
                 }
 
+                // Savings Acct
+                if(OtherDetails.savingsAcct) {
+                    const [savingsid, productcode] = OtherDetails.savingsAcct;
+
+                    field(`${productcode} Savings Acct`, () => {
+                        cy.contains('td', `${productcode} Savings Acct`).parent('tr').within(() => {
+                            cy.log(`savings account: ${savingsid}`);
+                            action.select(undefined, savingsid);
+                        });
+                    });
+                }
+
                 // Loan Officer
                 if (OtherDetails.loanOfficer) {
                     field('Loan Officer', () => {
