@@ -36,6 +36,35 @@ class Api {
             });
         });
     }
+
+    api_get(url, options = {}) {
+        return cy.getCookie('XSRF-TOKEN').then((xsrfCookie) => {
+            if (!xsrfCookie) {
+                throw new Error('XSRF-TOKEN cookie not found.');
+            }
+
+            const xsrfToken = decodeURIComponent(xsrfCookie.value);
+
+            return cy.request({
+                method: 'GET',
+                url,
+                failOnStatusCode: options.failOnStatusCode ?? false,
+                headers: {
+                    'X-XSRF-TOKEN': xsrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    ...options.headers // allow overrides
+                }
+            }).then((response) => {
+                // auto-assert success
+                if (!options.skipAssert) {
+                    expect(response.status).to.equal(200);
+                }
+
+                return response; // return so we can chain .then()
+            });
+        });
+    }
 }
 
 export default new Api();
