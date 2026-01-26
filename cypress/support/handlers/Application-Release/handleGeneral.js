@@ -7,7 +7,7 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
             cy.get('div.v-data-table:visible', { timeout: 10000 }).eq(1).as('deductions');
         });
 
-        const GeneralDetails = generalDetails;
+        const GeneralDetails = generalDetails || {};
         // check first if trigger submit is true before actual process
         if (triggerSubmit) cy.get('.v-btn__content:visible').contains('submit').click({ force: true });
 
