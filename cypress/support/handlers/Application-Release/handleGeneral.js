@@ -7,7 +7,8 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
             cy.get('div.v-data-table:visible', { timeout: 10000 }).eq(1).as('deductions');
         });
 
-        const GeneralDetails = generalDetails || {};
+        const loanDetails = generalDetails.loanDetails || {};
+        const deductions = generalDetails.deductions || {};
         // check first if trigger submit is true before actual process
         if (triggerSubmit) cy.get('.v-btn__content:visible').contains('submit').click({ force: true });
 
@@ -40,10 +41,10 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
 
         cy.get('@loan-details').then(() => {
             // Loan Amount
-            if (GeneralDetails.loanDetails.loanAmount) {
+            if (loanDetails.loanAmount) {
                 field('Loan Amount', () => {
                     cy.contains('td', 'Loan Amount').parent('tr').within(() => {
-                        action.input('input.currency-field', GeneralDetails.loanDetails.loanAmount);
+                        action.input('input.currency-field', loanDetails.loanAmount);
                     });
                 });
             }
@@ -51,10 +52,10 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
 
         cy.get('@deductions').then(() => {
             //Service Charge
-            if (GeneralDetails.deductions.serviceCharge) {
+            if (deductions.serviceCharge) {
                 field('Service Charge', () => {
                     cy.contains('td', 'Service Charge').parent('tr').within(() => {
-                        action.input('input.currency-field', GeneralDetails.deductions.serviceCharge);
+                        action.input('input.currency-field', deductions.serviceCharge);
                     });
                 });
             }
