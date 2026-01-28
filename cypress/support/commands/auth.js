@@ -1,28 +1,62 @@
 import GetHelper from '@support/helpers/GetHelper';
 import general from '@support/routes/general';
+import { db } from '@database';
+
+Cypress.Commands.add('getUsernameByFullName', ({ firstname, middlename, lastname }) => {
+    return db.usernameByFullName(firstname, middlename, lastname);
+});
 
 Cypress.Commands.add('login', () => {
-    // establish or restore the session (Cookies/Storage)
-    cy.session('user_session', () => {
-        cy.visit('/login');
-        // get and assign user credentials
-        const { username, password } = GetHelper.get_user_credentials();
 
-        cy.intercept('POST', '**/login').as('login');
-        cy.intercept('GET', '**/home').as('home');
+  const resolution = GetHelper.resolveCredentials();
+
+  // CASE 1: env has a user identity → lookup DB
+  if (resolution.source === 'env') {
+    const { firstname, middlename, lastname, password } = resolution.newUser;
+
+    cy.getUsernameByFullName({ firstname, middlename, lastname })
+      .then(({ username }) => {
+        doLogin(username, password);
+      });
+
+    return;
+  }
+
+  // CASE 2: fixture exists → use it
+  cy.readFile(
+    'cypress/fixtures/create-user-credential/userCredentials.json',
+    { timeout: 0, log: false }
+  )
+    .then(({ username, password }) => {
+      doLogin(username, password);
+    })
+    .catch(() => {
+      // CASE 3: fallback
+      const { username, password } = GetHelper.getDefaultCredentials();
+      doLogin(username, password);
+    });
+});
+
+function doLogin(username, password) {
+  cy.session(['user_session', username], () => {
+    cy.visit('/login');
+
+    cy.intercept('POST', '**/login').as('login');
+    cy.intercept('GET', '**/home').as('home');
 
         cy.get("input[name='username']").type(username, { delay: 100 }).type('{enter}');
         cy.get("input[name='password']").type(password, { delay: 100, log: false }).type('{enter}');
 
-        cy.wait('@login').its('response.statusCode').should('eq', 302);
-        cy.wait('@home').its('response.statusCode').should('eq', 200);
+    cy.wait('@login').its('response.statusCode').should('eq', 302);
+    cy.wait('@home').its('response.statusCode').should('eq', 200);
 
         cy.url().should('include', '/home');
-    });
+  });
 
     // ensures the page loads for tests that don't have their own cy.visit() to avoid blank page and resulting to an error
-    cy.visit('/home');
-});
+  cy.visit('/home');
+}
+
 
 Cypress.Commands.add('logout', () => {
     cy.url().then((url) => {
