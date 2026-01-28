@@ -1,3 +1,4 @@
+const fs = require('fs');
 require('dotenv').config(); // load environment variables from .emv file
 
 const { defineConfig } = require("cypress");
@@ -9,12 +10,15 @@ module.exports = defineConfig({
     e2e: {
         baseUrl: process.env.CYPRESS_BASE_URL,
 
-        env: {
-            username: process.env.CYPRESS_USERNAME,
-            password: process.env.CYPRESS_PASSWORD,
-        },
-
         setupNodeEvents(on, config) {
+            // Load environment variables and pass them to Cypress
+            config.env.newUser = {
+                firstname: process.env.CYPRESS_NEW_FIRSTNAME,
+                middlename: process.env.CYPRESS_NEW_MIDDLENAME,
+                lastname: process.env.CYPRESS_NEW_LASTNAME,
+                password: process.env.CYPRESS_NEW_PASSWORD
+            }
+
             on('file:preprocessor', webpack({
                 webpackOptions: {
                     resolve: {
@@ -27,6 +31,9 @@ module.exports = defineConfig({
                 }
             }))
             on('task', {
+                fileExists(filename) {
+                    return fs.existsSync(filename);
+                },
                 query: async (query) => {
                     const connection = await mysql.createConnection({
                         host: process.env.DB_HOST,

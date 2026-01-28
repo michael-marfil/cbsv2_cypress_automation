@@ -24,7 +24,57 @@ class GetHelper {
      * @returns {{username: string, password: string}} Object containing credentials from Cypress.env
      */
     get_user_credentials() {
-        return { username: Cypress.env('username'), password: Cypress.env('password') }
+        const { firstname, middlename, lastname, password } = Cypress.env('newUser');
+
+        if (!firstname || !middlename || !lastname) {
+            throw new Error('User details (firstname, middlename, lastname) are not defined in Cypress.env. Please check your .env and cypress.config.js files.');
+        }
+
+        // Use the existing db helper to be safer and more consistent
+        return db.usernameByFullName(firstname, middlename, lastname).then((user) => {
+            if (!user || !user.username) {
+                throw new Error(`Could not find a user in the database with the name: ${firstname} ${middlename} ${lastname}. Please check the database or your .env file.`);
+            }
+
+            const credentials = {
+                username: user.username,
+                password: password
+            };
+
+            // Write to the fixture as a side-effect
+            cy.writeFile('cypress/fixtures/create-user-credential/userCredentials.json', credentials, { log: false });
+
+            // Explicitly wrap and return the credentials object so it's yielded to the next command in the chain.
+            return cy.wrap(credentials);
+        });
+    }
+
+    /**
+     * Priority:
+     * 1. Cypress.env('newUser')  → dynamic / existing DB user
+     * 2. Saved fixture           → last created user
+     * 3. Default env credentials → fallback
+     */
+
+    resolveCredentials() {
+
+        const newUser = Cypress.env('newUser');
+        if (newUser?.firstname && newUser?.middlename && newUser?.lastname && newUser?.password) {
+            return {
+                source: 'env',
+                newUser
+            };
+        }
+        return {
+            source: 'fixture'
+        };
+    }
+
+    getDefaultCredentials() {
+        return {
+            username: Cypress.env('username'),
+            password: Cypress.env('password')
+        };
     }
 
     /**

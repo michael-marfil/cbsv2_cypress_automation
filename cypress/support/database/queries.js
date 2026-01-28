@@ -23,6 +23,7 @@ export const sql = {
 
         // ------ USER ------ //
         'user.userbranchid': `SELECT userbranchid FROM general_employees WHERE username = ?`,
+        'user.usernamebyfullname': `SELECT username FROM general_employees WHERE firstname = ? AND middlename = ? AND lastname = ? LIMIT 1`,
 
         // ------ EMPLOYEE ------ //
         'employee.data': `SELECT * FROM general_employees WHERE username = ?`,

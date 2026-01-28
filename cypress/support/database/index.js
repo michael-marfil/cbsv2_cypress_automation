@@ -92,6 +92,13 @@ class Database {
     }
 
     /**
+     * @returns username for given fullname (or null if none)
+     */
+    usernameByFullName(firstname, middlename, lastname) {
+        return this.getOne('select.user.usernamebyfullname', firstname, middlename, lastname).then(row => row ?? null);
+    }
+
+    /**
      * @returns employee's data for given username (or null if none)
      */
     employee(username) {

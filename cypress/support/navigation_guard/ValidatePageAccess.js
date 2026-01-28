@@ -41,36 +41,36 @@ export function beforeEnter(permission) {
     const categoryid = parsed.permissionID;
     const slug = `${parsed.permissionID}-${parsed.level}`;
 
-    // assign username from user credential
-    const { username } = GetHelper.get_user_credentials();
-    
-    return GetHelper.permissions(categoryid, slug).then((permissions) => { // get permission details from database using category and slug
-        const permissionid = permissions.permissionid;
-        cy.wrap(permissionid).as('permissionid');
-    }).then(() => {
-        return GetHelper.get_employee(username).then((employeedata) => { // get employee data using username (specifically for employeeid)
-        const employeeid = employeedata.employeeid; 
-            return cy.get('@permissionid').then((permissionid) => {
-                return GetHelper.get_employee_userright(employeeid, permissionid).then((result) => {
-                    // Normalize the query result to a number, handling various inconsistent shapes returned by the MySQL driver:
-                    // - Tries result.employee_userright first (ideal case when alias works)
-                    // - Falls back to result.count (common when COUNT(*) is returned as 'count')
-                    // - Falls back to result directly (in case the driver returns just the raw number, e.g., 1 or 0)
-                    // - Defaults to 0 if result is null/undefined/empty
-                    // Number() converts strings like "1" to actual numbers and handles invalid cases safely
-                    const userRight = Number(
-                        result?.employee_userright ?? 
-                        result?.count ?? 
-                        result ?? 
-                        0
-                    );
+    // assign username from user credential asynchronously
+    return GetHelper.get_user_credentials().then(({ username }) => {
+        return GetHelper.permissions(categoryid, slug).then((permissions) => { // get permission details from database using category and slug
+            const permissionid = permissions.permissionid;
+            cy.wrap(permissionid).as('permissionid');
+        }).then(() => {
+            return GetHelper.get_employee(username).then((employeedata) => { // get employee data using username (specifically for employeeid)
+            const employeeid = employeedata.employeeid; 
+                return cy.get('@permissionid').then((permissionid) => {
+                    return GetHelper.get_employee_userright(employeeid, permissionid).then((result) => {
+                        // Normalize the query result to a number, handling various inconsistent shapes returned by the MySQL driver:
+                        // - Tries result.employee_userright first (ideal case when alias works)
+                        // - Falls back to result.count (common when COUNT(*) is returned as 'count')
+                        // - Falls back to result directly (in case the driver returns just the raw number, e.g., 1 or 0)
+                        // - Defaults to 0 if result is null/undefined/empty
+                        // Number() converts strings like "1" to actual numbers and handles invalid cases safely
+                        const userRight = Number(
+                            result?.employee_userright ?? 
+                            result?.count ?? 
+                            result ?? 
+                            0
+                        );
 
-                    // Convert the numeric user right into a boolean:
-                    // - Any value > 0 means the employee has the permission
-                    // - 0 or falsy means no access
-                    const hasAccess = userRight > 0;
+                        // Convert the numeric user right into a boolean:
+                        // - Any value > 0 means the employee has the permission
+                        // - 0 or falsy means no access
+                        const hasAccess = userRight > 0;
 
-                    Cypress.env('nav-direct-visit-once', hasAccess); // store the boolean flag in Cypress environment for one-time use
+                        Cypress.env('nav-direct-visit-once', hasAccess); // store the boolean flag in Cypress environment for one-time use
+                    });
                 });
             });
         });
