@@ -85,21 +85,62 @@ export const action = {
 
                     // Select from menu (works outside .within() because we use cy.get from root)
                     cy.root().closest('body').within(() => {
-                        cy.get('.v-menu__content:visible .v-list-item', { timeout: 10000 })
-                            .should('have.length.greaterThan', 0)
-                            .then(() => {
+                        cy.get('.v-menu__content:visible', { timeout: 10000 })
+                            .should('be.visible')
+                            .then($menu => {
+                                const menuEl = $menu[0];
+
                                 if (typeof value === 'number') {
+                                    // Handle index-based selection
                                     cy.get('.v-list-item:visible')
-                                        .eq(value)
-                                        .scrollIntoView({ easing: 'linear', duration: 500 })
-                                        .click({ force: true });
+                                        .should('have.length.greaterThan', 0)
+                                        .then(() => {
+                                            cy.get('.v-list-item:visible')
+                                                .eq(value)
+                                                .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                .click({ force: true });
+                                        });
                                 } else if (typeof value === 'string') {
-                                    // Use partial match - first 50 characters or less
+                                    // Handle string-based selection with progressive scrolling
                                     const partialSearch = value.substring(0, 50);
-                                    cy.get('.v-list-item:visible')
-                                        .contains(partialSearch)
-                                        .scrollIntoView({ easing: 'linear', duration: 500 })
-                                        .click({ force: true });
+                                    let lastScrollTop = -1;
+
+                                    const scrollAndFind = (attempts = 0, maxAttempts = 20) => {
+                                        if (attempts >= maxAttempts) {
+                                            throw new Error(`Option '${partialSearch}' not found after ${maxAttempts} scroll attempts.`);
+                                        }
+
+                                        // check if reached the bottom (no more scrolling possible)
+                                        if (lastScrollTop === menuEl.scrollTop && attempts > 0) {
+                                            throw new Error(`Option '${partialSearch}' not found - reached end of list.`);
+                                        }
+
+                                        lastScrollTop = menuEl.scrollTop;
+
+                                        // Check if item is currently visible in the DOM
+                                        const $items = Cypress.$('.v-menu__content:visible .v-list-item');
+                                        const found = $items.toArray().some(item => {
+                                            const itemText = Cypress.$(item).text();
+                                            return itemText.includes(partialSearch);
+                                        });
+
+                                        if (found) {
+                                            // Item found, click it
+                                            cy.get('.v-menu__content:visible')
+                                                .contains('.v-list-item', partialSearch)
+                                                .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                .click({ force: true });
+                                        } else {
+                                            // Not found yet, scroll down more
+                                            menuEl.scrollTop += 300;
+                                            cy.wait(200, { log: false }).then(() => {
+                                                scrollAndFind(attempts + 1, maxAttempts);
+                                            });
+                                        }
+                                    };
+
+                                    // Start the progressive scroll search
+                                    scrollAndFind();
                                 } else {
                                     cy.log('Invalid value type.');
                                 }
