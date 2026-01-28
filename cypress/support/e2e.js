@@ -52,6 +52,11 @@ import '@support/seeders/LoanProductSeeder';
 import '@support/seeders/SavingsProductSeeder';
 import '@support/seeders/ClientSeeder';
 
+/**
+ * Create users
+ */
+import '@support/create-user/CreateUserCommand';
+
 // ---------- CUSTOM COMMANDS ---------- //
 
 /**
