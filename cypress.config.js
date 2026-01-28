@@ -11,6 +11,11 @@ module.exports = defineConfig({
         baseUrl: process.env.CYPRESS_BASE_URL,
 
         setupNodeEvents(on, config) {
+            // Load user credentials from fixture
+            const UserFixtureCredentials = JSON.parse(
+                fs.readFileSync(path.resolve(__dirname, 'cypress/fixtures/create-user-credential/userCredentials.json'), 'utf8')
+            );
+
             // Load environment variables and pass them to Cypress
             config.env.newUser = {
                 firstname: process.env.CYPRESS_NEW_FIRSTNAME,
@@ -18,6 +23,9 @@ module.exports = defineConfig({
                 lastname: process.env.CYPRESS_NEW_LASTNAME,
                 password: process.env.CYPRESS_NEW_PASSWORD
             }
+
+            config.env.username = UserFixtureCredentials.username;
+            config.env.password = UserFixtureCredentials.password;
 
             on('file:preprocessor', webpack({
                 webpackOptions: {
