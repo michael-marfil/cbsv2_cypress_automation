@@ -51,6 +51,7 @@ import '@support/helpers/GetHelper';
 import '@support/seeders/LoanProductSeeder';
 import '@support/seeders/SavingsProductSeeder';
 import '@support/seeders/ClientSeeder';
+import '@support/seeders/SavingsAccountSeeder';
 
 /**
  * Create users

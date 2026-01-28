@@ -5,7 +5,7 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
     cy.get('.tabContainer:visible', { timeout: 10000 }).then(() => {
         cy.get('.v-form.form-section:visible', { timeout: 10000 }).then(() => {
             
-            const OtherDetails = otherDetails;
+            const OtherDetails = otherDetails || {};
             // check first if trigger submit is true before actual process
             if (triggerSubmit) cy.get('.v-btn__content:visible').contains('submit').click({ force: true });
 
@@ -126,20 +126,18 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
 
                 // Loan Purpose
                 if (OtherDetails.loanPurpose) {
-                    field('Loan Purpose', () => {
-                        db.loan_purpose(OtherDetails.loanPurpose).then(response => {
-                            const loanpurposename = response.name;
+                    db.loan_class(OtherDetails.loanPurpose).then(response => {
+                        field('Loan Purpose', () => {
+                            const loanpurposename = response.purpose_name;
                             const loanpurposeid = String(OtherDetails.loanPurpose).padStart(4, '0');
                             cy.contains('td', /^\sLoan Purpose\s$/).parent('tr').within(() => {
                                 action.autocomplete('input[type="text"]', loanpurposeid, loanpurposename);
                             });
                         });
-                    });
 
-                    // Loan Classification
-                    field('Loan Classification', () => {
-                        cy.contains('td', 'Loan Classification').parent('tr').within(() => {
-                            db.loan_class(OtherDetails.loanPurpose).then(response => {
+                        // Loan Classification
+                        field('Loan Classification', () => {
+                            cy.contains('td', 'Loan Classification').parent('tr').within(() => {
                                 const className = response.classification_name;
                                 const loanClass = OtherDetails.loanClass;
 
@@ -148,12 +146,10 @@ export default function handleOtherDetailsTab(otherDetails, triggerSubmit) {
                                 action.select(undefined, toUse);
                             });
                         });
-                    });
 
-                    // Industry
-                    field('Industry', () => {
-                        cy.contains('td', 'Industry').parent('tr').within(() => {
-                            db.loan_class(OtherDetails.loanPurpose).then(response => {
+                        // Industry
+                        field('Industry', () => {
+                            cy.contains('td', 'Industry').parent('tr').within(() => {
                                 const industryName = response.industry_name;
                                 const industry = OtherDetails.industry;
 

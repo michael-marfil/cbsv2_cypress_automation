@@ -5,8 +5,8 @@ export default function handleAmortOptions(loanDetails, amortDetails) {
         cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(0).as('loan-application-details');
         cy.get('div.v-data-table.py-1:visible', { timeout: 10000 }).eq(1).as('amortization-details');
 
-        const LoanAppDetails = loanDetails;
-        const AmortDetails = amortDetails;
+        const LoanAppDetails = loanDetails || {};
+        const AmortDetails = amortDetails || {};
         
         // helper function to safely interact with a field
         const field = (label, callback, waitTime = 500) => {

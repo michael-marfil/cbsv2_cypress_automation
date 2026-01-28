@@ -41,33 +41,33 @@ Cypress.Commands.add('seedLoanProduct', (overrides = {}) => {
                     grouping: "1",
                     groupby: "0",
                     defaultcostcenter: 2,
-                    borrowertypedefault: 3,
+                    borrowertypedefault: 40,
                     clientgroupdefault: "0",
-                    requiresecurity: "0",
+                    requiresecurity: "1",
                     proceedstypedefault: "1",
                     enabledeedofassignment: "0",
                     requireworkersemployed: false,
                     requirecoborrower: false,
                     requiredcomakers: "0",
                     isEmployeeLoan: "0",
-                    termunit: "4",
-                    termunitflexibility: false,
+                    termunit: "1",
+                    termunitflexibility: true,
                     weekadjuster: "0",
                     termDaysFixed: false,
-                    termDaysFixedFlex: false,
-                    termdefault: "12",
-                    termflexibility: false,
-                    termmaximum: 24,
+                    termDaysFixedFlex: true,
+                    termdefault: "24",
+                    termflexibility: true,
+                    termmaximum: 60,
                     ...overrides.general
                 },
                 rates: {
                     interestrate: 15,
-                    interestrateflexibility: false,
+                    interestrateflexibility: true,
                     interestRecompute: false,
-                    interestcomputationbasis: "1",
-                    interestcomputationbasisflexibility: false,
-                    interestcomputation: "1",
-                    interestcomputationflexibility: false,
+                    interestcomputationbasis: "0",
+                    interestcomputationbasisflexibility: true,
+                    interestcomputation: "0",
+                    interestcomputationflexibility: true,
                     balloonoption: false,
                     diminishing_option: "0",
                     interestrateminimum: 0,
@@ -80,8 +80,8 @@ Cypress.Commands.add('seedLoanProduct', (overrides = {}) => {
                     penaltyglcode: glCodes.penaltyglcode,
                     approval_data: {
                         amount: {
-                            "0": { "1": 100, "2": 300, "3": 500, "4": 700, "5": 900, "6": null, "7": null, "8": null, "9": null, "10": null },
-                            "1": { "1": 200, "2": 400, "3": 600, "4": 800, "5": 1000, "6": null, "7": null, "8": null, "9": null, "10": null }
+                            "0": { "1": 1000, "2": 3000, "3": 5000, "4": 7000, "5": 9000, "6": null, "7": null, "8": null, "9": null, "10": null },
+                            "1": { "1": 2000, "2": 4000, "3": 6000, "4": 8000, "5": 10000, "6": null, "7": null, "8": null, "9": null, "10": null }
                         },
                         approver: {
                             "0": { "1": "1", "2": "1", "3": "1", "4": "1", "5": "1", "6": "1", "7": "1", "8": "1", "9": "1", "10": "1" },
@@ -169,13 +169,13 @@ Cypress.Commands.add('seedLoanProduct', (overrides = {}) => {
                         amortoption: "0", adjustonholidays: "0", amortgraceperiod: "0", autodebitAmort: false
                     },
                     amortDays: {
-                        includeDays: { Sun: 0, Mon: 1, Tue: 1, Wed: 1, Thu: 1, Fri: 1, Sat: 0 }
+                        includeDays: { Sun: 0, Mon: true, Tue: true, Wed: true, Thu: true, Fri: true, Sat: true }
                     },
                     ...overrides.amortization
                 },
                 others: {
                     savings: {
-                        savingsholdout: 0, savingsholdoutoption: "1", savingsproductid: "0"
+                        savingsholdout: 0, savingsholdoutoption: "1", savingsproductid: 0
                     },
                     glcodes: {
                         currentglcode: glCodes.currentglcode,

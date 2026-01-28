@@ -54,6 +54,7 @@ export const action = {
      * @param {string} [selector='.v-select__selections'] - CSS selector for the select element
      * @param {number|string} value - Index (0-based) or exact text of the option to select
      * 
+     * Auto-detects matching strategy
      */
     select: (selector = '.v-select__selections', value) => {
         if (value !== undefined && value !== null) {
@@ -69,13 +70,18 @@ export const action = {
 
                     // get current selected value
                     const currentText = $el.text().trim();
-                    const targetValue = typeof value === 'string' ? value : null;
 
-                    // skip if the same value is already selected (partial match)
-                    if (targetValue) {
-                        const partialTarget = targetValue.substring(0, 50);
-                        if (currentText.includes(partialTarget)) {
-                            cy.log(`skipping: value containing "${partialTarget}" already selected`);
+                    // Auto-detect matching strategy based on string length
+                    const usePartialMatch = typeof value === 'string' && value.length > 30;
+
+                    // skip if the same value is already selected
+                    if (typeof value === 'string') {
+                        const isAlreadySelected = usePartialMatch 
+                            ? currentText.includes(value.substring(0, 50))
+                            : currentText === value;
+                        
+                        if (isAlreadySelected) {
+                            cy.log(`skipping: value "${value}" already selected`);
                             return;
                         }
                     }
@@ -83,23 +89,80 @@ export const action = {
                     // otherwise, proceed
                     cy.wrap($el).click({ force: true });
 
-                    // Select from menu (works outside .within() because we use cy.get from root)
+                    // Select from menu
                     cy.root().closest('body').within(() => {
-                        cy.get('.v-menu__content:visible .v-list-item', { timeout: 10000 })
-                            .should('have.length.greaterThan', 0)
-                            .then(() => {
+                        cy.get('.v-menu__content:visible', { timeout: 10000 })
+                            .should('be.visible')
+                            .then($menu => {
+                                const menuEl = $menu[0];
+
                                 if (typeof value === 'number') {
+                                    // Handle index-based selection
                                     cy.get('.v-list-item:visible')
-                                        .eq(value)
-                                        .scrollIntoView({ easing: 'linear', duration: 500 })
-                                        .click({ force: true });
+                                        .should('have.length.greaterThan', 0)
+                                        .then(() => {
+                                            cy.get('.v-list-item:visible')
+                                                .eq(value)
+                                                .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                .click({ force: true });
+                                        });
                                 } else if (typeof value === 'string') {
-                                    // Use partial match - first 50 characters or less
-                                    const partialSearch = value.substring(0, 50);
-                                    cy.get('.v-list-item:visible')
-                                        .contains(partialSearch)
-                                        .scrollIntoView({ easing: 'linear', duration: 500 })
-                                        .click({ force: true });
+                                    // Auto-detect matching strategy
+                                    const usePartialMatch = value.length > 30;
+                                    const searchValue = usePartialMatch ? value.substring(0, 50) : value;
+                                    
+                                    cy.log(`Using ${usePartialMatch ? 'partial' : 'exact'} match for: "${searchValue}"`);
+                                    
+                                    let lastScrollTop = -1;
+
+                                    const scrollAndFind = (attempts = 0, maxAttempts = 20) => {
+                                        if (attempts >= maxAttempts) {
+                                            throw new Error(`Option '${value}' not found after ${maxAttempts} scroll attempts.`);
+                                        }
+
+                                        // check if reached the bottom
+                                        if (lastScrollTop === menuEl.scrollTop && attempts > 0) {
+                                            throw new Error(`Option '${value}' not found - reached end of list.`);
+                                        }
+
+                                        lastScrollTop = menuEl.scrollTop;
+
+                                        // Check if item is currently visible in the DOM
+                                        const $items = Cypress.$('.v-menu__content:visible .v-list-item');
+                                        const found = $items.toArray().some(item => {
+                                            const itemText = Cypress.$(item).text().trim();
+                                            return usePartialMatch 
+                                                ? itemText.includes(searchValue)
+                                                : itemText === value;
+                                        });
+
+                                        if (found) {
+                                            // Item found, click it
+                                            if (usePartialMatch) {
+                                                cy.get('.v-menu__content:visible')
+                                                    .contains('.v-list-item', searchValue)
+                                                    .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                    .click({ force: true });
+                                            } else {
+                                                cy.get('.v-menu__content:visible .v-list-item')
+                                                    .filter((index, item) => {
+                                                        return Cypress.$(item).text().trim() === value;
+                                                    })
+                                                    .first()
+                                                    .scrollIntoView({ easing: 'linear', duration: 500 })
+                                                    .click({ force: true });
+                                            }
+                                        } else {
+                                            // Not found yet, scroll down more
+                                            menuEl.scrollTop += 300;
+                                            cy.wait(200, { log: false }).then(() => {
+                                                scrollAndFind(attempts + 1, maxAttempts);
+                                            });
+                                        }
+                                    };
+
+                                    // Start the progressive scroll search
+                                    scrollAndFind();
                                 } else {
                                     cy.log('Invalid value type.');
                                 }
