@@ -251,7 +251,84 @@ class Database {
         return this.getOne('select.general.co-maker').then(row => row ?? null);
     }
 
+    /**
+     * @returns latest created username (or null if none)
+     */
+    getLatestUsername() {
+        return this.getOne('select.user.latest').then(row => row?.username ?? null);
+    }
+
+    /**
+     * @returns user count for given fullname (or 0 if none)
+     */
+    getUserCountByFullName(firstname, middlename, lastname) {
+        return this.getOne('select.user.countbyfullname', firstname, middlename, lastname).then(row => row?.count || 0);
+    }
+
+    /**
+     * @returns employeeid for given username (or null if none)
+     */
+    getEmployeeByUsername(username) {
+        return this.getOne('select.user.employeebyusername', username).then(row => row?.employeeid ?? null);
+    }
+
+    /**
+     * @returns employeeid and activitylog for given username (or null if none)
+     */
+    getEmployeeActivityByUsername(username) {
+        return this.getOne('select.user.employeeactivitybyusername', username).then(row => row ?? null);
+    }
+
     // ------ UPDATE OPERATIONS ------
+
+    /**
+     * @resets user login attempts and activates account
+     */
+    resetUserLoginAttempts(username) {
+        return this.query('update.user.resetattempts', username);
+    }
+
+    /**
+     * @sets the activity log for a user
+     */
+    setUserActivityLog(activitylog, employeeid) {
+        return this.query('update.user.setactivitylog', activitylog, employeeid);
+    }
+
+    /**
+     * @resets the activity log for a user
+     */
+    resetUserActivityLog(employeeid) {
+        return this.query('update.user.resetactivitylog', employeeid);
+    }
+
+    /**
+     * @sets the password change date for a user
+     */
+    setUserPasswordChangeDate(date, employeeid) {
+        return this.query('update.user.setpasswordchangedate', date, employeeid);
+    }
+
+    /**
+     * @sets user status to on vacation leave
+     */
+    setUserOnVacation(employeeid) {
+        return this.query('update.user.setonvacation', employeeid);
+    }
+
+    /**
+     * @resets user vacation leave status
+     */
+    resetUserVacation(employeeid) {
+        return this.query('update.user.resetvacation', employeeid);
+    }
+    
+    /**
+     * @sets the session timeout value in general_settings
+     */
+    setSessionTimeout(value) {
+        return this.query('update.settings.sessiontimeout', value);
+    }
 
     // ------ INSERT OPERATIONS ------
 
