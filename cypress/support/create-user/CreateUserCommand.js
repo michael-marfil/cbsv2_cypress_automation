@@ -1,4 +1,17 @@
+import { db } from '@database';
+import { action as UIHelper } from '@support/helpers/UIHelper';
+
 // ==================== HELPER FUNCTIONS ====================
+
+/*
+ * NOTE ON REFACTORING:
+ * Many functions in this file use a selector strategy based on finding an element by its
+ * text label first, then navigating the DOM (e.g., .contains('Label').parent().find('input')).
+ * The current UIHelper functions are designed for simpler, direct selectors (e.g., '#id').
+ *
+ * For this reason, only `attemptLogin` has been refactored, as its direct selectors
+ * are a good fit for the existing UIHelper.
+ */
 
 // Common selectors
 const SELECTORS = {
@@ -9,9 +22,13 @@ const SELECTORS = {
 
 // Helper: Attempt login with username and password
 const attemptLogin = (username, pwd, options = {}) => {
-    const { delay = 100, logPassword = true } = options;
-    cy.get(SELECTORS.username).clear().type(username, { delay });
-    cy.get(SELECTORS.password).clear().type(pwd, { delay, log: logPassword }).type('{enter}');
+    const { logPassword = true } = options;
+    
+    // Use the UI helper for the username field
+    UIHelper.input(SELECTORS.username, username);
+    
+    // Password field is handled directly to accommodate the `.type('{enter}')` and `log` option
+    cy.get(SELECTORS.password).clear().type(pwd, { delay: 100, log: logPassword }).type('{enter}');
 };
 
 // Helper: Fill change password form
@@ -54,13 +71,11 @@ const fillUserCreationForm = (firstname, middlename, lastname) => {
 const submitUserCreation = () => {
     cy.get('td:visible', { timeout: 60000 }).contains('Submit').click();
     cy.get('td:visible', { timeout: 60000 }).contains('Create').click();
-    // cy.wait(2000); // Ensures database update
 };
 
 // Helper: Fetch latest username from database
 const fetchLatestUsername = () => {
-    return cy.task('query', "SELECT username FROM general_employees ORDER BY employeeid DESC LIMIT 1;")
-        .then((result) => result[0]?.username || 'defaultUser');
+    return db.getLatestUsername().then((username) => username || 'defaultUser');
 };
 
 // ==================== COMMANDS ====================
@@ -89,12 +104,9 @@ Cypress.Commands.add("LoginValidCredentials", () => {
     fillUserCreationForm(firstname, middlename, lastname);
 
     // Check if user already exists
-    cy.task('query', `
-        SELECT COUNT(*) AS count FROM general_employees
-        WHERE firstname = '${firstname}' AND middlename = '${middlename}' AND lastname = '${lastname}'
-    `, { log: false })
-    .then((result) => {
-        if ((result[0]?.count || 0) > 0) {
+    db.getUserCountByFullName(firstname, middlename, lastname)
+    .then((count) => {
+        if (count > 0) {
             cy.log(`User "${firstname} ${middlename} ${lastname}" already exists. Skipping creation.`);
             cy.visit('/login');
             return;
@@ -153,11 +165,7 @@ Cypress.Commands.add("LoginWithIncorrectAttempts", ({ incorrectPassword, attempt
 
         // Reset user account if needed (for blocked accounts after 3 attempts)
         if (resetAfter) {
-            cy.task('query', `
-                UPDATE general_employees
-                SET attempts = '0', isactive = '1'
-                WHERE username = '${username}';
-            `, { log: false });
+            db.resetUserLoginAttempts(username);
         }
     });
 });
@@ -186,17 +194,15 @@ Cypress.Commands.add("LoginNonRBSoftTechCBSUser", ({ noneUsername, nonePassword 
 // Helper: Test login with active session (user not logged out properly or logged from another terminal)
 const testActiveSessionLogin = (expectedMessage) => {
     cy.getCredentials().then(({ username, password }) => {
-        cy.task('query', `SELECT employeeid FROM general_employees WHERE username = '${username}' LIMIT 1;`, { log: false })
-            .then((result) => {
-                if (!result || result.length === 0) {
+        db.getEmployeeByUsername(username)
+            .then((employeeid) => {
+                if (!employeeid) {
                     throw new Error(`No matching user found for username: ${username}`);
                 }
-
-                const employeeid = result[0].employeeid;
                 const currentDateTime = getPhilippineDateTime();
 
                 // Set active session
-                cy.task('query', `UPDATE general_employees SET activitylog = '${currentDateTime}' WHERE employeeid = ${employeeid};`, { log: false })
+                db.setUserActivityLog(currentDateTime, employeeid)
                     .then(() => {
                         cy.visit('/login');
                         cy.get(SELECTORS.username).should('be.visible');
@@ -204,7 +210,7 @@ const testActiveSessionLogin = (expectedMessage) => {
                         cy.contains(expectedMessage).should('be.visible');
 
                         // Reset activitylog
-                        cy.task('query', `UPDATE general_employees SET activitylog = '0000-00-00 00:00:00' WHERE employeeid = ${employeeid};`, { log: false });
+                        db.resetUserActivityLog(employeeid);
                     });
             });
     });
@@ -232,9 +238,9 @@ Cypress.Commands.add("LoginUserCurrentPasswordHasAlreadyExpired", () => {
             cy.writeFile('cypress/fixtures/user-login/password_cycle.json', { ...passwordCycle, currentIndex: newIndex });
 
             // Force password expiration
-            cy.task('query', `SELECT employeeid FROM general_employees WHERE username='${username}' LIMIT 1;`)
-                .then((result) => {
-                    cy.task('query', `UPDATE general_employees SET passwordchangedate='2010-01-01' WHERE employeeid=${result[0].employeeid};`);
+            db.getEmployeeByUsername(username)
+                .then((employeeid) => {
+                    db.setUserPasswordChangeDate('2010-01-01', employeeid);
                 })
                 .then(() => {
                     // Login with old password
@@ -269,26 +275,26 @@ Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
         const storedUsername = username;
 
         //  Fetch employeeid and check activitylog status
-        cy.task('query', `SELECT employeeid, activitylog FROM general_employees WHERE username = '${storedUsername}' LIMIT 1;`, {log: false})
-            .then((result) => {
-                if (!result || result.length === 0) {
+        db.getEmployeeActivityByUsername(storedUsername)
+            .then((user) => {
+                if (!user || !user.employeeid) {
                     throw new Error(` No matching user found for username: ${storedUsername}`);
                 }
 
-                const employeeid = result[0].employeeid;
+                const employeeid = user.employeeid;
                 //  Convert to Philippine Time (UTC+8)
                 const now = new Date();
                 now.setHours(now.getHours() + 8); //  Add 8 hours to match PHT
                 const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' '); // Full YYYY-MM-DD HH:MM:SS format
 
-                cy.task('query', `UPDATE general_employees SET activitylog = '${currentDateTime}' WHERE employeeid = ${employeeid};`, {log: false})
+                db.setUserActivityLog(currentDateTime, employeeid)
                     .then(() => {
                         cy.visit('/login');
                         cy.get('#username').should('be.visible').clear().type(storedUsername);
                         cy.get('#password').should('be.visible').clear().type(password).type('{enter}');
                         cy.contains('User has not logged-out properly or is currently logged in other terminal.').should('be.visible')
                         .then(() =>{
-                            cy.task('query', `UPDATE general_employees SET activitylog = '0000-00-00 00:00:00' WHERE employeeid = ${employeeid};`, {log: false})
+                            db.resetUserActivityLog(employeeid)
                         })
                         ;
                     });
@@ -300,16 +306,14 @@ Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
 //** Scenario for User was on Vacation Leave */
 Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
     cy.getCredentials().then(({ username, password }) => {
-        cy.task('query', `SELECT employeeid FROM general_employees WHERE username = '${username}' LIMIT 1;`, { log: false })
-            .then((result) => {
-                if (!result || result.length === 0) {
+        db.getEmployeeByUsername(username)
+            .then((employeeid) => {
+                if (!employeeid) {
                     throw new Error(`No matching user found for username: ${username}`);
                 }
 
-                const employeeid = result[0].employeeid;
-
                 // Set user as on vacation leave
-                cy.task('query', `UPDATE general_employees SET blockduetoleave = '1', isactive = '0' WHERE employeeid = ${employeeid};`, { log: false })
+                db.setUserOnVacation(employeeid)
                     .then(() => {
                         cy.visit('/login');
                         cy.get(SELECTORS.username).should('be.visible');
@@ -319,7 +323,7 @@ Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
                             .should('be.visible')
                             .then(() => {
                                 // Reset vacation leave status
-                                cy.task('query', `UPDATE general_employees SET blockduetoleave = '0', isactive = '1' WHERE employeeid = ${employeeid};`, { log: false });
+                                db.resetUserVacation(employeeid);
                                 cy.log('User vacation leave status reset successfully.');
                             });
                     });
@@ -331,7 +335,7 @@ Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
 //** Scenario for User Login Successfully to RBSoftech but remains Inactive */
 Cypress.Commands.add("InActiveUserAccount", () => {
     // Set short session timeout for test
-    cy.task('query', `UPDATE general_settings SET value = '10' WHERE name = 'sessiontimeout';`, { log: false })
+    db.setSessionTimeout('10')
         .then(() => {
             cy.getCredentials().then(({ username, password }) => {
                 cy.visit('/login');
@@ -343,7 +347,7 @@ Cypress.Commands.add("InActiveUserAccount", () => {
                 cy.wait(10000)
                     .then(() => {
                         // Restore session timeout
-                        cy.task('query', `UPDATE general_settings SET value = '1800' WHERE name = 'sessiontimeout';`, { log: false });
+                        db.setSessionTimeout('1800');
                         cy.log('Session timeout restored to 1800 seconds.');
                     });
             });

@@ -24,6 +24,10 @@ export const sql = {
         // ------ USER ------ //
         'user.userbranchid': `SELECT userbranchid FROM general_employees WHERE username = ?`,
         'user.usernamebyfullname': `SELECT username FROM general_employees WHERE firstname = ? AND middlename = ? AND lastname = ? LIMIT 1`,
+        'user.latest': `SELECT username FROM general_employees ORDER BY employeeid DESC LIMIT 1`,
+        'user.countbyfullname': `SELECT COUNT(*) AS count FROM general_employees WHERE firstname = ? AND middlename = ? AND lastname = ?`,
+        'user.employeebyusername': `SELECT employeeid FROM general_employees WHERE username = ? LIMIT 1`,
+        'user.employeeactivitybyusername': `SELECT employeeid, activitylog FROM general_employees WHERE username = ? LIMIT 1`,
 
         // ------ EMPLOYEE ------ //
         'employee.data': `SELECT * FROM general_employees WHERE username = ?`,
@@ -97,6 +101,18 @@ export const sql = {
     /**
      * UPDATE QUERIES
      */
+    update: {
+        // ------ USER ------ //
+        'user.resetattempts': `UPDATE general_employees SET attempts = '0', isactive = '1' WHERE username = ?`,
+        'user.setactivitylog': `UPDATE general_employees SET activitylog = ? WHERE employeeid = ?`,
+        'user.resetactivitylog': `UPDATE general_employees SET activitylog = '0000-00-00 00:00:00' WHERE employeeid = ?`,
+        'user.setpasswordchangedate': `UPDATE general_employees SET passwordchangedate = ? WHERE employeeid = ?`,
+        'user.setonvacation': `UPDATE general_employees SET blockduetoleave = '1', isactive = '0' WHERE employeeid = ?`,
+        'user.resetvacation': `UPDATE general_employees SET blockduetoleave = '0', isactive = '1' WHERE employeeid = ?`,
+
+        // ------ SETTINGS ------ //
+        'settings.sessiontimeout': `UPDATE general_settings SET value = ? WHERE name = 'sessiontimeout'`
+    },
 
     /**
      * INSERT QUERIES

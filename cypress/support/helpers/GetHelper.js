@@ -77,6 +77,10 @@ class GetHelper {
         };
     }
 
+    getUsernameByFullName({ firstname, middlename, lastname }) {
+        return db.usernameByFullName(firstname, middlename, lastname);
+    }
+
     /**
      * Fetches the specific Branch ID assigned to a user from the database.
      * @param {string} [username] - Defaults to the environment username if not provided.
