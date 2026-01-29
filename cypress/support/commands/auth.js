@@ -2,10 +2,6 @@ import GetHelper from '@support/helpers/GetHelper';
 import general from '@support/routes/general';
 import { db } from '@database';
 
-Cypress.Commands.add('getUsernameByFullName', ({ firstname, middlename, lastname }) => {
-    return db.usernameByFullName(firstname, middlename, lastname);
-});
-
 Cypress.Commands.add('login', () => {
 
   const resolution = GetHelper.resolveCredentials();
@@ -14,7 +10,7 @@ Cypress.Commands.add('login', () => {
   if (resolution.source === 'env') {
     const { firstname, middlename, lastname, password } = resolution.newUser;
 
-    cy.getUsernameByFullName({ firstname, middlename, lastname })
+    GetHelper.getUsernameByFullName({ firstname, middlename, lastname })
       .then(({ username }) => {
         doLogin(username, password);
       });
@@ -22,19 +18,17 @@ Cypress.Commands.add('login', () => {
     return;
   }
 
-  // CASE 2: fixture exists → use it
-  cy.readFile(
-    'cypress/fixtures/create-user-credential/userCredentials.json',
-    { timeout: 0, log: false }
-  )
-    .then(({ username, password }) => {
-      doLogin(username, password);
-    })
-    .catch(() => {
-      // CASE 3: fallback
-      const { username, password } = GetHelper.getDefaultCredentials();
-      doLogin(username, password);
-    });
+  // CASE 2: use credentials from config
+  const username = Cypress.env('username');
+  const password = Cypress.env('password');
+
+  if (username && password) {
+    doLogin(username, password);
+  } else {
+    // CASE 3: fallback
+    const { username: defaultUsername, password: defaultPassword } = GetHelper.getDefaultCredentials();
+    doLogin(defaultUsername, defaultPassword);
+  }
 });
 
 function doLogin(username, password) {
