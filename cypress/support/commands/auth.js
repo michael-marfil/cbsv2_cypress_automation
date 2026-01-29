@@ -1,56 +1,31 @@
 import GetHelper from '@support/helpers/GetHelper';
 import general from '@support/routes/general';
-import { db } from '@database';
+import { performLogin } from '@support/sessions/LoginSession';
 
 Cypress.Commands.add('login', () => {
+    cy.then(() => {
+        const resolution = GetHelper.resolveCredentials();
 
-  const resolution = GetHelper.resolveCredentials();
+        // CASE 1: env has a user identity → lookup DB
+        if (resolution.source === 'env') {
+            const { firstname, middlename, lastname, password } = resolution.newUser;
 
-  // CASE 1: env has a user identity → lookup DB
-  if (resolution.source === 'env') {
-    const { firstname, middlename, lastname, password } = resolution.newUser;
+            return GetHelper.getUsernameByFullName({ firstname, middlename, lastname }).then(({ username }) => 
+                performLogin(username, password)
+            );
+        }
 
-    GetHelper.getUsernameByFullName({ firstname, middlename, lastname })
-      .then(({ username }) => {
-        doLogin(username, password);
-      });
+        // CASE 2: use credentials from config
+        const username = Cypress.env('username');
+        const password = Cypress.env('password');
 
-    return;
-  }
+        if (username && password) return performLogin(username, password);
 
-  // CASE 2: use credentials from config
-  const username = Cypress.env('username');
-  const password = Cypress.env('password');
-
-  if (username && password) {
-    doLogin(username, password);
-  } else {
-    // CASE 3: fallback
-    const { username: defaultUsername, password: defaultPassword } = GetHelper.getDefaultCredentials();
-    doLogin(defaultUsername, defaultPassword);
-  }
+        // CASE 3: fallback
+        const { username: defaultUsername, password: defaultPassword } = GetHelper.getDefaultCredentials();
+        return performLogin(defaultUsername, defaultPassword);
+    });
 });
-
-function doLogin(username, password) {
-  cy.session(['user_session', username], () => {
-    cy.visit('/login');
-
-    cy.intercept('POST', '**/login').as('login');
-    cy.intercept('GET', '**/home').as('home');
-
-        cy.get("input[name='username']").type(username, { delay: 100 }).type('{enter}');
-        cy.get("input[name='password']").type(password, { delay: 100, log: false }).type('{enter}');
-
-    cy.wait('@login').its('response.statusCode').should('eq', 302);
-    cy.wait('@home').its('response.statusCode').should('eq', 200);
-
-        cy.url().should('include', '/home');
-  });
-
-    // ensures the page loads for tests that don't have their own cy.visit() to avoid blank page and resulting to an error
-  cy.visit('/home');
-}
-
 
 Cypress.Commands.add('logout', () => {
     cy.url().then((url) => {
