@@ -16,7 +16,8 @@ Cypress.Commands.add('approveLendingSettings', ({ toApprove = [] } = {}) => {
     // intercept and get credentials
     cy.intercept('POST', '**/lending-settings-report').as('getApprovals');
     cy.intercept('POST', '**/lending-settings-report/update-data').as('Approved');
-    const { username, password } = GetHelper.get_user_credentials();
+    const username = Cypress.env('username');
+    const password = Cypress.env('password');
     const categoryid = '1401';
 
     GetHelper.has_level_permission(username, categoryid, '2').then((hasAccess) => {

@@ -2,7 +2,7 @@ import GetHelper from '@support/helpers/GetHelper';
 import general from '@support/routes/general';
 
 Cypress.Commands.add('approveLoanApplication', (clientid, productcode) => {
-    const { password } = GetHelper.get_user_credentials();
+    const password = Cypress.env('password');
 
     // intercept the approval list POST request
     cy.intercept('POST', '**/lending/application/approve').as('getApprovals');
