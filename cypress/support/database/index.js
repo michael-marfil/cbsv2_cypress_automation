@@ -292,7 +292,7 @@ class Database {
      * @sets the activity log for a user
      */
     setUserActivityLog(activitylog, employeeid) {
-        return this.query('update.user.setactivitylog', activitylog, employeeid);
+        return this.query('update.user.setactivitylog', [activitylog, employeeid]);
     }
 
     /**
@@ -306,7 +306,7 @@ class Database {
      * @sets the password change date for a user
      */
     setUserPasswordChangeDate(date, employeeid) {
-        return this.query('update.user.setpasswordchangedate', date, employeeid);
+        return this.query('update.user.setpasswordchangedate', [date, employeeid]);
     }
 
     /**

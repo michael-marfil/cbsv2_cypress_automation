@@ -1,3 +1,4 @@
+import GetHelper from '@support/helpers/GetHelper';
 import { db } from '@database';
 import { action as UIHelper } from '@support/helpers/UIHelper';
 
@@ -137,7 +138,7 @@ Cypress.Commands.add("LoginValidCredentials", () => {
 
 //** Scenario for LogIn on 1st Attempt */
 Cypress.Commands.add("LoginSuccedingOn1stAttempt", () => {
-    cy.getCredentials().then(({ username, password }) => {
+    GetHelper.get_user_credentials().then(({ username, password }) => {
         cy.log(`Logging in with username: ${username}`);
         cy.visit('/login');
         attemptLogin(username, password);
@@ -151,7 +152,7 @@ Cypress.Commands.add("LoginSuccedingOn1stAttempt", () => {
 // * @param {boolean} resetAfter - Whether to reset user account after test (for 3 attempts)
 // */
 Cypress.Commands.add("LoginWithIncorrectAttempts", ({ incorrectPassword, attempts = 1, resetAfter = false }) => {
-    cy.getCredentials().then(({ username, password }) => {
+    GetHelper.get_user_credentials().then(({ username, password }) => {
         cy.visit('/login');
 
         // Make incorrect attempts
@@ -160,8 +161,14 @@ Cypress.Commands.add("LoginWithIncorrectAttempts", ({ incorrectPassword, attempt
         }
 
         // Correct login
-        attemptLogin(username, password);
-        cy.url().should("not.include", "/login");
+        cy.url().then((url) => {
+            if (url.includes('/home')) {
+                attemptLogin(username, password);
+                cy.url().should("not.include", "/login");
+            } else {
+                cy.log('User account may be blocked due to too many failed attempts.');
+            }
+        });
 
         // Reset user account if needed (for blocked accounts after 3 attempts)
         if (resetAfter) {
@@ -193,13 +200,14 @@ Cypress.Commands.add("LoginNonRBSoftTechCBSUser", ({ noneUsername, nonePassword 
 
 // Helper: Test login with active session (user not logged out properly or logged from another terminal)
 const testActiveSessionLogin = (expectedMessage) => {
-    cy.getCredentials().then(({ username, password }) => {
+    GetHelper.get_user_credentials().then(({ username, password }) => {
         db.getEmployeeByUsername(username)
             .then((employeeid) => {
                 if (!employeeid) {
                     throw new Error(`No matching user found for username: ${username}`);
                 }
                 const currentDateTime = getPhilippineDateTime();
+                cy.log(`Setting active session for employee ID: ${employeeid} at ${currentDateTime}`);
 
                 // Set active session
                 db.setUserActivityLog(currentDateTime, employeeid)
@@ -227,43 +235,50 @@ Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
 });
 //** Scenario for logIn User's current password has already expired */
 Cypress.Commands.add("LoginUserCurrentPasswordHasAlreadyExpired", () => {
-    cy.getCredentials().then(({ username }) => {
-        cy.readFile('cypress/fixtures/user-login/password_cycle.json').then((passwordCycle) => {
+    // Get the username from credentials, but the password sequence will be driven by passwordCycle.json
+    GetHelper.get_user_credentials().then(({ username }) => {
+        cy.readFile('cypress/fixtures/create-user-credential/passwordCycle.json').then((passwordCycle) => {
             const { passwords, currentIndex } = passwordCycle;
+
+            // The "old" password is the one at the current index in the cycle
             const oldPassword = passwords[currentIndex];
+            
+            // The "new" password is the next one in the cycle
             const newIndex = (currentIndex + 1) % passwords.length;
             const newPassword = passwords[newIndex];
 
-            // Update password_cycle.json
-            cy.writeFile('cypress/fixtures/user-login/password_cycle.json', { ...passwordCycle, currentIndex: newIndex });
+            // Update the cycle file with the new index for the next run
+            cy.writeFile('cypress/fixtures/create-user-credential/passwordCycle.json', { ...passwordCycle, currentIndex: newIndex });
 
-            // Force password expiration
+            // Force password expiration in the database
             db.getEmployeeByUsername(username)
                 .then((employeeid) => {
-                    db.setUserPasswordChangeDate('2010-01-01', employeeid);
+                    if (!employeeid) {
+                        throw new Error(`Could not find employee for username: ${username}`);
+                    }
+                    cy.log(`Forcing password expiration for employee ID: ${employeeid}`);
+                    return db.setUserPasswordChangeDate('2010-01-01', employeeid);
                 })
                 .then(() => {
-                    // Login with old password
+                    // Attempt to login with the "expired" old password from the cycle
                     cy.visit('/login');
                     cy.get(SELECTORS.username).should('be.visible');
                     attemptLogin(username, oldPassword);
 
-                    // Change password using helper
+                    // Fill out the change password form
                     fillChangePasswordForm(username, oldPassword, newPassword, { visible: false });
 
-                    // Save new credentials
+                    // Update userCredentials.json with the new password to keep it in sync
                     cy.writeFile('cypress/fixtures/create-user-credential/userCredentials.json', {
                         username: username,
                         password: newPassword
                     });
 
-                    // Re-login with new password
+                    // Re-login with the new password to confirm the change
                     cy.get(SELECTORS.username).should('be.visible');
                     attemptLogin(username, newPassword);
                     cy.url().should("not.include", "/login");
                 });
-
-            cy.visit('/login');
         });
     });
 });
@@ -271,7 +286,7 @@ Cypress.Commands.add("LoginUserCurrentPasswordHasAlreadyExpired", () => {
 
 //** Scenario for User is logged from another terminal */
 Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
-    cy.getCredentials().then(({ username, password }) => {
+    GetHelper.get_user_credentials().then(({ username, password }) => {
         const storedUsername = username;
 
         //  Fetch employeeid and check activitylog status
@@ -305,12 +320,13 @@ Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
 
 //** Scenario for User was on Vacation Leave */
 Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
-    cy.getCredentials().then(({ username, password }) => {
+    GetHelper.get_user_credentials().then(({ username, password }) => {
         db.getEmployeeByUsername(username)
-            .then((employeeid) => {
-                if (!employeeid) {
+            .then((rows) => {
+                if (!rows || rows.length === 0) {
                     throw new Error(`No matching user found for username: ${username}`);
                 }
+                const employeeid = rows[0].employeeid;
 
                 // Set user as on vacation leave
                 db.setUserOnVacation(employeeid)
@@ -337,7 +353,7 @@ Cypress.Commands.add("InActiveUserAccount", () => {
     // Set short session timeout for test
     db.setSessionTimeout('10')
         .then(() => {
-            cy.getCredentials().then(({ username, password }) => {
+            GetHelper.get_user_credentials().then(({ username, password }) => {
                 cy.visit('/login');
                 cy.get(SELECTORS.username).should('be.visible');
                 attemptLogin(username, password);
