@@ -321,12 +321,12 @@ Cypress.Commands.add("LoginUserIsLoggedFromAnotherTerminal", () => {
 //** Scenario for User was on Vacation Leave */
 Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
     GetHelper.get_user_credentials().then(({ username, password }) => {
-        db.getEmployeeByUsername(username)
-            .then((rows) => {
-                if (!rows || rows.length === 0) {
-                    throw new Error(`No matching user found for username: ${username}`);
+        const storedUsername = username;
+        db.getEmployeeByUsername(storedUsername)
+            .then((employeeid) => {
+                if (!employeeid) {
+                    throw new Error(`No matching user found for username: ${storedUsername}`);
                 }
-                const employeeid = rows[0].employeeid;
 
                 // Set user as on vacation leave
                 db.setUserOnVacation(employeeid)
@@ -340,7 +340,6 @@ Cypress.Commands.add("LoginUserIsOnVacationLeave", () => {
                             .then(() => {
                                 // Reset vacation leave status
                                 db.resetUserVacation(employeeid);
-                                cy.log('User vacation leave status reset successfully.');
                             });
                     });
             });
