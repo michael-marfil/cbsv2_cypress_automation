@@ -238,6 +238,13 @@ class Database {
     }
 
     /**
+     * @returns data if clients has an active loan (or null if none)
+     */
+    client_active_loan(clientid) {
+        return this.getOne('select.general.hasactiveloan', clientid).then(row => row ?? null);
+    }
+
+    /**
      * @returns list of random employees (loan officer)
      */
     loan_officer() {

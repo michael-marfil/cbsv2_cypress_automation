@@ -78,6 +78,7 @@ import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand'
  */
 import '@support/commands/General/Approval/Lending/LoanApplicationApproval';
 import '@support/commands/General/Approval/Lending/LendingSettingsApproval';
+import '@support/commands/General/Approval/Lending/LoanApplicationDisapproval';
 
 beforeEach(() => {
     // automatically prevent new tabs/windows from opening in all tests.
