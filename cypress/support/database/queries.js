@@ -92,6 +92,18 @@ export const sql = {
             CONCAT(firstname, ' ', LEFT(middlename, 1), '.', ' ', lastname) AS accountname 
             FROM general_clients 
             WHERE firstname = ? AND middlename = ? AND lastname = ?`,
+        // Client Loan
+        'general.hasactiveloan': `SELECT gc.clientid, gc.firstname, gc.lastname, ld.loanstatus, 
+            CONCAT(gc.firstname, ' ', LEFT(gc.middlename, 1), '.', ' ', gc.lastname) AS accountname
+            FROM general_clients gc
+            JOIN lending_loandetails ld ON gc.clientid = ld.clientid
+            WHERE EXISTS (
+            SELECT 1
+            FROM lending_loandetails sub_ld
+            WHERE sub_ld.clientid = gc.clientid
+            AND sub_ld.loanstatus = 1
+            )
+            AND gc.clientid = ?`,
         // Employees
         'general.employees': `SELECT employeeid FROM general_employees ORDER BY RAND() LIMIT 1`,
         // Co Borrower
