@@ -71,6 +71,7 @@ import '@support/commands/Accounting/Journals/JournalPostingCommand';
  */
 import '@support/commands/Lending/Application-Release/LoanApplicationCommand';
 import '@support/commands/Lending/Application-Release/LoanReleaseCommand';
+import '@support/commands/Lending/Reports/ClientDetailsCommand';
 import '@support/commands/Lending/Settings/Lending_Settings/SettingsMgmtCommand';
 
 /**
