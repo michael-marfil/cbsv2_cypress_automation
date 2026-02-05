@@ -330,6 +330,13 @@ class Database {
         return this.query('update.settings.sessiontimeout', value);
     }
 
+    /**
+     * @sets the 'backdatedaysallowed' value in general_settings
+     */
+    setBackdateDaysAllowed(value) {
+        return this.query('update.settings.updatebackdatedaysallowed', value);
+    }
+
     // ------ INSERT OPERATIONS ------
 
     /**
