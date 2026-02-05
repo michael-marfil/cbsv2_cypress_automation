@@ -125,7 +125,8 @@ export const sql = {
         'user.resetvacation': `UPDATE general_employees SET blockduetoleave = '0', isactive = '1' WHERE employeeid = ?`,
 
         // ------ SETTINGS ------ //
-        'settings.sessiontimeout': `UPDATE general_settings SET value = ? WHERE name = 'sessiontimeout'`
+        'settings.sessiontimeout': `UPDATE general_settings SET value = ? WHERE name = 'sessiontimeout'`,
+        'settings.updatebackdatedaysallowed': `UPDATE general_settings SET value = ? WHERE name = 'backdatedaysallowed'`
     },
 
     /**

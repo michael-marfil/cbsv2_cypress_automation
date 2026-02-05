@@ -65,6 +65,7 @@ import '@support/create-user/CreateUserCommand';
  * Accounting
  */
 import '@support/commands/Accounting/Journals/JournalPostingCommand';
+import '@support/commands/Accounting/Acctng-Date/AcctngDateCommand';
 
 /**
  * Lending

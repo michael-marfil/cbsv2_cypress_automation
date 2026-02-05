@@ -34,6 +34,22 @@ import { beforeEnter } from '@support/navigation_guard/ValidatePageAccess';
  * }
  */
 class accountingmodule {
+    // ACCOUNTING 
+    goToAccounting() {
+        beforeEnter('1303-1').then(() => {
+            cy.navigateTo('accounting');
+        }); 
+        return this;
+    }
+    
+    // ACCOUNTING DATE
+    goToAccountingDate() {
+        // beforeEnter('1301-2').then(() => {
+            cy.navigateTo('accounting.change-date');
+        // });
+        return this;
+    }
+
     // JOURNALS
     goToJournalPosting() {
         beforeEnter('1303-1').then(() => {
@@ -105,6 +121,11 @@ class accountingmodule {
     }
 
     // SETTINGS
+        // Settings Management
+        goToSettingsMgmt() {
+            cy.navigateTo('accounting.settings.accountingSettings.settings-mgmt');
+            return this;
+        }
 
     // GL ACCOUNTS
         // GL Accounts Mgm't

@@ -25,6 +25,12 @@ Cypress.Commands.add('navigateTo', (path, options = {}) => {
         accounting: {
             category: 'Accounting',
             children: {
+                // Accounting Date
+                'change-date': {
+                    nav: 'Acctng Date',
+                    url: '/accounting/change-date',
+                    expectedUrl: '/accounting/change-date'
+                },
                 // Journals
                 journals: {
                     submenu: 'Journals',
