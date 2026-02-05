@@ -187,6 +187,13 @@ class Database {
     }
 
     /**
+     * @returns latest pnid for loan application
+     */
+    loan_details(clientid, loanproductid, amount) {
+        return this.getOne('select.lending.loandetails', clientid, loanproductid, amount).then(row => row ?? null);
+    }
+
+    /**
      * @returns product settings for given product name (or null if none)
      */
     savings_product(productname, productid) {
@@ -228,6 +235,13 @@ class Database {
         }
         
         return this.getOne('select.general.clients', firstname, middlename, lastname).then(row => row ?? null);
+    }
+
+    /**
+     * @returns data if clients has an active loan (or null if none)
+     */
+    client_active_loan(clientid) {
+        return this.getOne('select.general.hasactiveloan', clientid).then(row => row ?? null);
     }
 
     /**
