@@ -1,8 +1,8 @@
-import { db } from '@database';
+import { db} from '@database';
 import GetHelper from '@support/helpers/GetHelper';
 import FormatHelper from '@support/helpers/FormatHelper';
 
-describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimonthly (360 days in a year)', () => {
+describe('Release Additional/Reloan - Default product settings (all fixed) - Monthly (360 days in a year)', () => {
     let data = {};
 
     before(() => {
@@ -14,12 +14,12 @@ describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimo
         db.loan_security().then(loanSecurity => { data.loanSecurity = loanSecurity.name });
         db.client_group().then(clientGroup => { data.clientGroup = clientGroup.clientgroupid });
         db.loan_purpose().then(loanpurpose => { data.loanpurposeid = loanpurpose.loanpurposeid });
-        db.clients('FNAME_CL_LRA_028', 'MNAME_CL_LRA_028', 'LNAME_CL_LRA_028').then(clients => { clients ? (
+        db.clients('FNAME_CL_LRA_029', 'MNAME_CL_LRA_029', 'LNAME_CL_LRA_029').then(clients => { clients ? (
             data.clientId = clients.clientid,
             data.accountName = clients.accountname,
             data.clientFallback = false
         ) : data.clientFallback = true });
-        db.loan_product('LP_LRA_028').then(loan_product => { loan_product ? (
+        db.loan_product('LP_LRA_029').then(loan_product => { loan_product ? (
             data.loanProductId = loan_product.loanproductid,
             data.loanProductName = loan_product.name,
             data.loanProductCode = loan_product.shortname,
@@ -57,11 +57,11 @@ describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimo
             if (isFallback) {
                 cy.log('Create New Client.');
                 cy.seedClient({
-                    lastName: 'LNAME_CL_LRA_028',
-                    firstName: 'FNAME_CL_LRA_028',
-                    middleName: 'MNAME_CL_LRA_028'
+                    lastName: 'LNAME_CL_LRA_029',
+                    firstName: 'FNAME_CL_LRA_029',
+                    middleName: 'MNAME_CL_LRA_029'
                 }).then(() => {
-                    db.clients('FNAME_CL_LRA_028', 'MNAME_CL_LRA_028', 'LNAME_CL_LRA_028').then(clients => clients
+                    db.clients('FNAME_CL_LRA_029', 'MNAME_CL_LRA_029', 'LNAME_CL_LRA_029').then(clients => clients
                         ? (data.clientId) : (() => { throw new Error('Client not found after creation.'); })()
                     );
                 });
@@ -77,18 +77,18 @@ describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimo
                 cy.log('Create Loan Product');
                 cy.seedLoanProduct({
                     general: {
-                        productname: "LP_LRA_028",
-                        productcode: "LP028",
-                        description: "description for loan product test case 28",
-                        termunit: "3",
-                        termdefault: "18",
+                        productname: "LP_LRA_029",
+                        productcode: "LP029",
+                        description: "description for loan product test case 29",
+                        termunit: "4",
+                        termdefault: "12",
                         requirecoborrower: true
                     },
                     rates: {
                         daysinayear: "360"
                     }
                 }).then(() => {
-                    db.loan_product('LP_LRA_028').then(loan_product => {
+                    db.loan_product('LP_LRA_029').then(loan_product => {
                         data.loanProductId = loan_product.loanproductid;
                         data.loanProductName = loan_product.name;
                         data.loanProductCode = loan_product.shortname;
@@ -120,15 +120,13 @@ describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimo
                         cy.log('no active loan, performing loan application/release...');
                         const amount = 10000;
                         cy.seedLoanApplicationRelease(clientid, loanproductid, amount);
-                    } else {
-                        cy.log('Skipping: Client has active loan');
                     }
                 });
             });
         });
     });
 
-    it('Should perform Loan Application', () => {
+    it('Should peform Loan Application', () => {
         cy.get('@clientid').then(clientid => {
             cy.get('@loanproductid').then(loan_product_id => {
                 cy.get('@loanproductname').then(loan_product => {
@@ -142,20 +140,17 @@ describe('Release Additiona/Reloan - Default product settings (all fixed) - Bimo
                             },
                             data: {
                                 loan_app_details: [{
-                                    term: 18, termUnit: 'Semi-Months',
+                                    term: 12, termUnit: 'Months',
                                     interestRate: 15, interestRateUnit: 'Per Annum',
                                     interestComp: 'Discounted'
                                 }],
                                 amort_details: [{
                                     fixedDaysofTerm: 0,
-                                    amortDays: 0
+                                    amortDays: 'Every end of the month'
                                 }],
                                 general: [{
                                     loanDetails: {
-                                        loanAmount: '50000'
-                                    },
-                                    deductions: {
-                                        serviceCharge: '1000'
+                                        loanAmount: '40000'
                                     }
                                 }],
                                 other_details: [{
