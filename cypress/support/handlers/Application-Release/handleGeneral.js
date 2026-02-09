@@ -48,6 +48,19 @@ export default function handleGeneralTab(generalDetails, triggerSubmit) {
                     });
                 });
             }
+
+            // Maturity Date
+            if (loanDetails.maturityDate) {
+                field('Maturity', () => {
+                    cy.contains('td', 'Maturity').parent('tr').within(() => {
+                        cy.get('td.datepicker-component', { timeout: 5000 }).within(() => {
+                            cy.get('input[type="text"]', { timeout: 5000 }).click({ force: true }).then(() => {
+                                action.datepicker(loanDetails.maturityDate);
+                            });
+                        });
+                    });
+                });
+            }
         });
 
         cy.get('@deductions').then(() => {
