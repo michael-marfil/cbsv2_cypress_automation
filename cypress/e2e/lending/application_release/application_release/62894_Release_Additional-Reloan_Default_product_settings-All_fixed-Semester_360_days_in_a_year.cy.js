@@ -2,7 +2,7 @@ import { db } from '@database';
 import GetHelper from '@support/helpers/GetHelper';
 import FormatHelper from '@support/helpers/FormatHelper';
 
-describe('Release Additional/Reloan - Default product settings (all fixed) - Monthly (360 days in a year)', () => {
+describe('Release Additional/Reloan - Default product settings (all fixed) - Semester (360 days in a year)', () => {
     let data = {};
 
     before(() => {
@@ -14,12 +14,12 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
         db.loan_security().then(loanSecurity => { data.loanSecurity = loanSecurity.name });
         db.client_group().then(clientGroup => { data.clientGroup = clientGroup.clientgroupid });
         db.loan_purpose().then(loanpurpose => { data.loanpurposeid = loanpurpose.loanpurposeid });
-        db.clients('FNAME_CL_LRA_029', 'MNAME_CL_LRA_029', 'LNAME_CL_LRA_029').then(clients => { clients ? (
+        db.clients('FNAME_CL_LRA_031', 'MNAME_CL_LRA_031', 'LNAME_CL_LRA_031').then(clients => { clients ? (
             data.clientId = clients.clientid,
             data.accountName = clients.accountname,
             data.clientFallback = false
         ) : data.clientFallback = true });
-        db.loan_product('LP_LRA_029').then(loan_product => { loan_product ? (
+        db.loan_product('LP_LRA_031').then(loan_product => { loan_product ? (
             data.loanProductId = loan_product.loanproductid,
             data.loanProductName = loan_product.name,
             data.loanProductCode = loan_product.shortname,
@@ -45,10 +45,14 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
         // set user right permissions.
         cy.permissions({
             userPermissions: [
+                { permissionID: '1401', level: 1, hasAccess: true },
+                { permissionID: '1401', level: 2, hasAccess: true },
+                { permissionID: '1401', level: 3, hasAccess: false },
+
                 { permissionID: '1402', level: 1, hasAccess: true },
                 { permissionID: '1402', level: 2, hasAccess: true },
                 { permissionID: '1402', level: 3, hasAccess: false },
-            ],
+            ]
         });
     });
 
@@ -57,12 +61,12 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
             if (isFallback) {
                 cy.log('Create New Client.');
                 cy.seedClient({
-                    lastName: 'LNAME_CL_LRA_029',
-                    firstName: 'FNAME_CL_LRA_029',
-                    middleName: 'MNAME_CL_LRA_029'
+                    lastName: 'LNAME_CL_LRA_031',
+                    firstName: 'FNAME_CL_LRA_031',
+                    middleName: 'MNAME_CL_LRA_031'
                 }).then(() => {
-                    db.clients('FNAME_CL_LRA_029', 'MNAME_CL_LRA_029', 'LNAME_CL_LRA_029').then(clients => clients
-                        ? (data.clientId) : (() => { throw new Error('Client not found after creation.'); })()
+                    db.clients('FNAME_CL_LRA_031', 'MNAME_CL_LRA_031', 'LNAME_CL_LRA_031').then(clients => clients 
+                        ? (data.clientId) : (() => { throw new Error('Client not found after creation.'); })() 
                     );
                 });
             } else {
@@ -77,18 +81,24 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
                 cy.log('Create Loan Product');
                 cy.seedLoanProduct({
                     general: {
-                        productname: "LP_LRA_029",
-                        productcode: "LP029",
-                        description: "description for loan product test case 29",
-                        termunit: "4",
-                        termdefault: "12",
+                        productname: "LP_LRA_031",
+                        productcode: "LP031",
+                        description: "description for loan product test case 31",
+                        termunit: "6",
+                        termunitflexibility: false,
+                        termDaysFixedFlex: false,
+                        termdefault: "8",
+                        termflexibility: false,
                         requirecoborrower: true
                     },
                     rates: {
+                        interestrateflexibility: false,
+                        interestcomputationbasisflexibility: false,
+                        interestcomputationflexibility: false,
                         daysinayear: "360"
                     }
                 }).then(() => {
-                    db.loan_product('LP_LRA_029').then(loan_product => {
+                    db.loan_product('LP_LRA_031').then(loan_product => {
                         data.loanProductId = loan_product.loanproductid;
                         data.loanProductName = loan_product.name;
                         data.loanProductCode = loan_product.shortname;
@@ -128,7 +138,7 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
         });
     });
 
-    it('Should peform Loan Application', () => {
+    it('Should perform Loan Application', () => {
         cy.get('@clientid').then(clientid => {
             cy.get('@loanproductid').then(loan_product_id => {
                 cy.get('@loanproductname').then(loan_product => {
@@ -142,17 +152,20 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Mon
                             },
                             data: {
                                 loan_app_details: [{
-                                    term: 12, termUnit: 'Months',
+                                    term: 8, termUnit: 'Semesters',
                                     interestRate: 15, interestRateUnit: 'Per Annum',
-                                    interestComp: 'Discounted'
+                                    interestComp: 'Diminishing'
                                 }],
                                 amort_details: [{
-                                    fixedDaysofTerm: 0,
-                                    amortDays: 'Every end of the month'
+                                    fixedDaysofTerm: 1,
+                                    diminishingOpt: "Equal Amort'n Computed Daily"
                                 }],
                                 general: [{
                                     loanDetails: {
                                         loanAmount: '40000'
+                                    },
+                                    deductions: {
+                                        serviceCharge: '1000'
                                     }
                                 }],
                                 other_details: [{
