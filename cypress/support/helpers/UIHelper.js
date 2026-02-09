@@ -260,7 +260,86 @@ export const action = {
                     cy.get('.v-menu__content:visible', { timeout: 5000 }).should('not.exist');
                 });
         }
-    }
+    },
 
+    /**
+     * Selects date from an datepicker component
+     * ---------------------------------------------------------
+     * 
+     * @param {string|number} date - given date from parameter to be selected
+     * 
+     */
+    datepicker: (date) => {
+        const months = [
+            'Jan', 
+            'Feb', 
+            'Mar', 
+            'Apr', 
+            'May', 
+            'Jun',
+            'Jul', 
+            'Aug', 
+            'Sep', 
+            'Oct', 
+            'Nov', 
+            'Dec'
+        ];
+
+        // Parse the date
+        const [month, day, year] = date.split('/'); 
+        const targetMonth = parseInt(month);        // target month
+        const targetDay = parseInt(day);            // target day
+        const targetYear = parseInt(year);          // target year
+
+        const targetMonthName = months[targetMonth - 1];    // target month name
+        cy.log(`Parsed - Month: ${targetMonth}, Day: ${targetDay}, Year: ${targetYear}`);
+
+        // Wait for date picker to be visible
+        cy.root().closest('body').within(() => {
+            cy.get('.v-card.v-picker:visible', { timeout: 5000 })
+            .should('be.visible')
+            .then(() => {
+                cy.get('.v-date-picker-header .v-date-picker-header__value:visible').as('date-picker-header')
+                cy.get('@date-picker-header')
+                    .find('button')
+                    .wait(1000)
+                    .click({ force: true }, { timeout: 50000 })
+                    .then(() => {
+                        cy.get('@date-picker-header')
+                            .contains('button', /^\d{4}$/, { timeout: 50000 }) // ensure its clicking the button with 4 digit number (year)
+                            .should('have.length', 1)
+                            .click({ force: true }, { timeout: 50000 })
+                            .then(() => {
+                                cy.get('.v-card.v-picker .v-picker__body .v-date-picker-years:visible')
+                                    .contains(targetYear)
+                                    .scrollIntoView({ easing: 'linear', duration: 1000, offset: { top: -100 } })
+                                    .wait(500)
+                                    .click({ force: true });
+                                cy.wait(1000);
+                            })
+                            .then(() => {
+                                cy.get('.v-card.v-picker .v-picker__body .v-date-picker-table:visible').as('date-picker-table');
+                                cy.get('@date-picker-table')
+                                    .find('table', 'tbody', 'tr')
+                                    .contains('td', targetMonthName).within(() => {
+                                        cy.get('button', { timeout: 100000}).click({ force: true });
+                                    });
+                                cy.wait(1000);
+                            })
+                            .then(() => {
+                                cy.get('@date-picker-table')
+                                    .find('table', 'tbody', 'tr')
+                                    .contains('td', targetDay).within(() => {
+                                        cy.get('button', { timeout: 100000 }).click({ force: true });
+                                    });
+                                cy.wait(1000);
+                            });
+                    });
+                cy.log(`Date successfully set to: ${date}`);
+            });
+        });
+        
+        return this;
+    }
 
 }
