@@ -125,6 +125,8 @@ describe('Release Additional/Reloan - Default product settings (all fixed) - Qua
                         cy.log('no active loan, performing loan application/release...');
                         const amount = 10000;
                         cy.seedLoanApplicationRelease(clientid, loanproductid, amount);
+                    } else {
+                        cy.log('Skipping: Client has active loan');
                     }
                 });
             });
